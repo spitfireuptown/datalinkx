@@ -219,9 +219,14 @@ public class JdbcOutputFormat extends BaseRichOutputFormat {
 
     @Override
     protected void writeSingleRecordInternal(Row row) throws WriteRecordException {
+        if (row.getArity() < 1) {
+            return;
+        }
+
         int index = 0;
         try {
-            for (; index < row.getArity(); index++) {
+//            for (; index < row.getArity(); index++) {
+            for (; index < column.size(); index++) {
                 preparedStatement.setObject(index+1, getField(row, index));
             }
 
@@ -362,6 +367,9 @@ public class JdbcOutputFormat extends BaseRichOutputFormat {
      */
     protected Object _getField(Row row, int index) {
         Object field = row.getField(index);
+        if (index >= columnType.size()) {
+            return field;
+        }
         String type = columnType.get(index);
 
         //field为空字符串，且写入目标类型不为字符串类型的字段，则将object设置为null

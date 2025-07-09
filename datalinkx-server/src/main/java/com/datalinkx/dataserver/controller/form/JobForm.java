@@ -80,6 +80,8 @@ public class JobForm {
 		private Boolean checkpoint;
 		@JsonProperty("restore_column_index")
 		private String restoreColumnIndex;
+		@JsonProperty("update_key")
+		private String updateKey;
 	}
 
 	@Data

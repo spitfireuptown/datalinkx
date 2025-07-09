@@ -51,7 +51,7 @@ public class TaskHealthCheckLoop implements InitializingBean {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 10000) // 每10秒检查
+    @Scheduled(fixedDelay = 60000) // 每60秒检查
     public void processQueueItems() {
         log.info("start to check stream task status");
 

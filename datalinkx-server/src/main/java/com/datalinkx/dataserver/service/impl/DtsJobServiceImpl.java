@@ -111,6 +111,7 @@ public class DtsJobServiceImpl implements DtsJobService {
         commonSettings.put(MetaConstants.CommonConstant.KEY_KAFKA_READ_INDEX, commonProperties.getKafkaReadMode());
         commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INTERVAL, commonProperties.getCheckpointInterval());
         commonSettings.put(MetaConstants.CommonConstant.KEY_RESTORE_COLUMN_INDEX, syncModeForm.getRestoreColumnIndex());
+        commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE, syncModeForm.getCheckpoint());
 
         List<String> dsIds = new ArrayList<>(Arrays.asList(jobBean.getReaderDsId(), jobBean.getWriterDsId()));
         Map<String, DsBean> dsId2Object = dsRepository.findAllByDsIdIn(dsIds)
@@ -127,6 +128,7 @@ public class DtsJobServiceImpl implements DtsJobService {
         DatalinkXJobDetail.Writer writer = DatalinkXJobDetail.Writer.builder()
                 .tableName(jobBean.getToTb())
                 .columns(toColumns)
+                .updateKey(syncModeForm.getUpdateKey())
                 .connectId(dsServiceImpl.getConnectId(dsId2Object.get(jobBean.getWriterDsId())))
                 .batchSize(commonProperties.getStreamBatchSize())
                 .type(dsId2Object.get(jobBean.getWriterDsId()).getType())

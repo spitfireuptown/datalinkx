@@ -52,6 +52,7 @@ public class ExecutorStreamJobHandler extends ExecutorJobHandler {
         Map jobSettingMap = JsonUtils.toObject(jobSetting, Map.class);
         Map<String, Object> restoreMap = (Map<String, Object>) jobSettingMap.get(MetaConstants.CommonConstant.KEY_RESTORE);
         restoreMap.put(MetaConstants.CommonConstant.KEY_RESTORE_COLUMN_INDEX, otherSetting.get(MetaConstants.CommonConstant.KEY_RESTORE_COLUMN_INDEX));
+        restoreMap.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE, otherSetting.get(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE));
         return JsonUtils.toJson(jobSettingMap);
     }
 }

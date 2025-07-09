@@ -91,6 +91,8 @@ public class DatalinkXJobDetail {
         Integer batchSize;
         String type;
         String insertFields;
+        String writeMode;
+        String updateKey;
         Object writerGraph;
     }
 

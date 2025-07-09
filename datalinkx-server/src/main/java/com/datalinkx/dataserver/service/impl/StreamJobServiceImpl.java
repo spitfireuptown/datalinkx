@@ -86,6 +86,7 @@ public class StreamJobServiceImpl implements StreamJobService {
         jobBean.setToTb(form.getToTbName());
         jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_CREATE);
         jobBean.setName(form.getJobName());
+        jobBean.setSyncMode(JsonUtils.toJson(form.getSyncMode()));
 
         jobRepository.save(jobBean);
         return jobId;
@@ -112,7 +113,12 @@ public class StreamJobServiceImpl implements StreamJobService {
         if (MetaConstants.JobStatus.JOB_STATUS_SYNCING == jobBean.getStatus()) {
             throw new DatalinkXServerException(StatusCode.JOB_IS_RUNNING, "任务运行中");
         }
-        jobRepository.updateJobStatus(jobId, MetaConstants.JobStatus.JOB_STATUS_QUEUE);
+        if (MetaConstants.JobStatus.JOB_STATUS_QUEUE == jobBean.getStatus()) {
+            throw new DatalinkXServerException(StatusCode.JOB_IS_RUNNING, "任务排队中");
+        }
+        jobBean.setRetryTime(0);
+        jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_SYNCING);
+        jobRepository.save(jobBean);
     }
 
     @Override

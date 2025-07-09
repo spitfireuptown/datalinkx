@@ -97,6 +97,7 @@ public final class MetaConstants {
         public static final String KEY_KAFKA_READ_INDEX = "kafkaReadMode";
         public static final String KEY_CHECKPOINT_INTERVAL = "checkpoint_interval";
         public static final String KEY_RESTORE = "restore";
+        public static final String KEY_CHECKPOINT_ENABLE = "isRestore";
 
         public static final Integer KEY_ALARM_RULE_OPEN= 1;
         public static final Integer KEY_ALARM_RULE_CLOSE= 0;

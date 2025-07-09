@@ -86,9 +86,9 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.hql: INFO
 
-# 大模型相关配置
+# 大模型相关配置，默认不开启大模型相关应用，打开embedding注释默认开启
 llm:
-  embedding: "shaw/dmeta-embedding-zh"                  # RAG向量化模型
+#  embedding: "shaw/dmeta-embedding-zh"                  # RAG向量化模型
   model: "qwen:7b"                                      # RAG问答大模型
   vector: "elasticsearch"                               # 向量数据库
   response_parse: "$.message.content"                   # 大模型算子 返回结果解析json_path

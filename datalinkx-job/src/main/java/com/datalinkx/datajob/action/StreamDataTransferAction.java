@@ -8,6 +8,7 @@ import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.datajob.job.ExecutorStreamJobHandler;
 
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
+import com.datalinkx.driver.dsdriver.base.meta.FlinkActionMeta;
 import com.datalinkx.driver.dsdriver.base.meta.StreamFlinkActionMeta;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
@@ -68,12 +69,14 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
 
     @Override
     protected void execute(StreamFlinkActionMeta unit) throws Exception {
-        Map<String, Object> commonSettings = unit.getCommonSettings();
-        commonSettings.put("savePointPath", unit.getCheckpoint());
-        String taskId = streamExecutorJobHandler.execute(unit.getJobId(), unit.getReaderDsInfo(), unit.getWriterDsInfo(), commonSettings);
-        unit.setTaskId(taskId);
-        // 更新task
-        datalinkXServerClient.updateJobTaskRel(unit.getJobId(), taskId);
+        synchronized (this) {
+            Map<String, Object> commonSettings = unit.getCommonSettings();
+            commonSettings.put("savePointPath", unit.getCheckpoint());
+            String taskId = streamExecutorJobHandler.execute(unit.getJobId(), unit.getReaderDsInfo(), unit.getWriterDsInfo(), commonSettings);
+            unit.setTaskId(taskId);
+            // 更新task
+            datalinkXServerClient.updateJobTaskRel(unit.getJobId(), taskId);
+        }
     }
 
     @Override
@@ -147,7 +150,21 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
         if (MetaConstants.DsType.STREAM_DB_LIST.contains(info.getSyncUnit().getWriter().getType())) {
             writerDsInfo = DsDriverFactory.getStreamDriver(info.getSyncUnit().getWriter().getConnectId()).getWriterInfo(info.getSyncUnit().getWriter());
         } else {
-            writerDsInfo = DsDriverFactory.getDsWriter(info.getSyncUnit().getWriter().getConnectId()).getWriterInfo(info.getSyncUnit().getWriter());
+
+            DatalinkXJobDetail.Writer writer = DatalinkXJobDetail
+                    .Writer
+                    .builder()
+                    .type(info.getSyncUnit().getWriter().getType())
+                    .connectId(info.getSyncUnit().getWriter().getConnectId())
+                    .tableName(info.getSyncUnit().getWriter().getTableName())
+                    .schema(info.getSyncUnit().getWriter().getSchema())
+                    .columns(info.getSyncUnit().getWriter().getColumns())
+                    .batchSize(info.getSyncUnit().getWriter().getBatchSize())
+                    // 如果是binlog2jdbc的writemode应为updte
+                    .writeMode("update")
+                    .updateKey(info.getSyncUnit().getWriter().getUpdateKey())
+                    .build();
+            writerDsInfo = DsDriverFactory.getDsWriter(info.getSyncUnit().getWriter().getConnectId()).getWriterInfo(writer);
         }
 
         return StreamFlinkActionMeta.builder()
