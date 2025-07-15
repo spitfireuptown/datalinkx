@@ -2,10 +2,10 @@
 ## DatalinkX Stars
 [![Stargazers over time](https://starchart.cc/SplitfireUptown/datalinkx.svg?variant=adaptive)](https://starchart.cc/SplitfireUptown/datalinkx)
 
+<a href="https://gitee.com/atuptown/datalinkx"><img src="https://gitee.com/atuptown/datalinkx/badge/star.svg?theme=gvp" alt="Gitee Starts"></a>
+<a href="https://gitee.com/atuptown/datalinkx"><img src="https://gitee.com/atuptown/datalinkx/badge/fork.svg?theme=gvp" alt="Gitee Starts"></a>
 <a href="https://github.com/SplitfireUptown/datalinkx"><img src="https://img.shields.io/github/stars/SplitfireUptown/datalinkx.svg?style=flat&label=GithubStars"></a>
-[![star](https://gitcode.com/m0_37817220/datalinkx/star/badge.svg)](https://gitcode.com/m0_37817220/datalinkx)
-<a href="https://gitee.com/atuptown/datalinkx"><img src="https://gitee.com/atuptown/datalinkx/badge/star.svg?theme=dark" alt="Gitee Starts"></a>
-  <a href="https://gitee.com/atuptown/datalinkx"><img src="https://gitee.com/atuptown/datalinkx/badge/fork.svg?theme=dark" alt="Gitee Starts"></a>
+[![star](https://gitcode.com/clouddragonlee/datalinkx/star/badge.svg)](https://gitcode.com/clouddragonlee/datalinkx)
 <a href="#"><img src="https://img.shields.io/badge/Author-在下uptown-orange.svg" alt="作者"></a>
 <a href="#项目文档"><img src="https://img.shields.io/badge/JDK-8-red.svg" alt="jdk版本"></a>
   <a href="#项目文档"><img src="https://img.shields.io/badge/SpringBoot-2.7.15-green.svg" alt="SpringBoot版本"></a>
@@ -23,6 +23,7 @@
 <a href="#项目文档"><img src="https://img.shields.io/badge/同步框架-Chunjun(FlinkX)-green.svg" alt="同步框架"></a>
 <a href="#项目文档"><img src="https://img.shields.io/badge/向量库-ElasticSearch 7.9.3-blue.svg" alt="向量库"></a>
 <a href="#项目文档"><img src="https://img.shields.io/badge/大模型框架-ollama-orange.svg" alt="大模型框架"></a>
+<a href="#项目文档"><img src="https://img.shields.io/badge/MCP-solon-yellow.svg" alt="MCP框架"></a>
 
 
 🔥🔥 **10W+字，共92个文档，带你玩转datalinkx**，详情可戳：[细致文档带你吃透DatalinkX](https://note.youdao.com/s/a9ltzlc1)
@@ -63,6 +64,7 @@
 | Seatunnel		        | 2.3.8			        |apache开源数据同步框架
 | Flink					         | 1.10.3					     |分布式大数据计算引擎
 | Ollama					        | x					          |大模型执行框架
+| Solon					         | 3.3.1				          |MCP框架
 | Xxl-job				        | 2.3.0					      |分布式调度框架
 | OpenFeign				      | 3.1.9					      |RPC通信服务
 | Jackson				        | 2.11.4					     |反序列化框架
