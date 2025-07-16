@@ -25,7 +25,7 @@ spring:
     host: ${REDIS_HOST:127.0.0.1}
     port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD:123456}
-    timeout: 10000
+    timeout: 60000
   main:
     allow-circular-references: true
 #  elasticsearch:  # 开启大模型时打开注解
@@ -50,7 +50,7 @@ data-transfer:
   # 批次提交行数，读fetch-size行后提交
   fetch-size: 1000
   # 流式任务提交阈值，读stream-batch-size行后提交
-  stream-batch-size: 10
+  stream-batch-size: 5
   # 读fetch-size行数据的查询超时时间
   query-time-out: 10000
   # 流式checkpoint地址

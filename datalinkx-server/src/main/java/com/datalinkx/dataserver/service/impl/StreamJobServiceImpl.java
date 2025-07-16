@@ -13,6 +13,7 @@ import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.client.JobClientApi;
 import com.datalinkx.dataserver.config.properties.CommonProperties;
 import com.datalinkx.dataserver.controller.form.JobForm;
+import com.datalinkx.dataserver.health.TaskHealthCheckLoop;
 import com.datalinkx.dataserver.repository.DsRepository;
 import com.datalinkx.dataserver.repository.JobRepository;
 import com.datalinkx.dataserver.service.DtsJobService;
@@ -21,6 +22,7 @@ import com.datalinkx.rpc.client.datalinkxjob.DatalinkXJobClient;
 import com.datalinkx.rpc.client.flink.FlinkClient;
 import com.datalinkx.rpc.client.flink.request.FlinkJobStopReq;
 import com.datalinkx.rpc.client.flink.response.FlinkJobOverview;
+import com.datalinkx.rpc.util.ApplicationContextUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +121,9 @@ public class StreamJobServiceImpl implements StreamJobService {
         jobBean.setRetryTime(0);
         jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_SYNCING);
         jobRepository.save(jobBean);
+
+        TaskHealthCheckLoop taskHealthCheckLoop = ApplicationContextUtil.getBean(TaskHealthCheckLoop.class);
+        taskHealthCheckLoop.processQueueItems();
     }
 
     @Override

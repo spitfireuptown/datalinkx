@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -65,10 +66,17 @@ public class DataTransHandler {
 
     @SneakyThrows
     @RequestMapping("/stream_exec")
-    public String streamJobHandler(String detail) {
+    public void streamJobHandler(String detail) {
         DatalinkXJobDetail datalinkXJobDetail = JsonUtils.toObject(detail, DatalinkXJobDetail.class);
-        streamDataTransferAction.doAction(datalinkXJobDetail);
-        return datalinkXJobDetail.getJobId();
+        CompletableFuture.runAsync(() -> {
+            try {
+
+                streamDataTransferAction.doAction(datalinkXJobDetail);
+            } catch (Exception e) {
+
+                logger.error("异步任务执行失败, jobId: {}", datalinkXJobDetail.getJobId(), e);
+            }
+        });
     }
 
     @RequestMapping("/job_health")

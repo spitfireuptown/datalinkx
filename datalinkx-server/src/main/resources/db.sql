@@ -122,3 +122,10 @@ CREATE TABLE `ALARM_RULE` (
                               PRIMARY KEY (`id`) USING BTREE,
                               KEY `rule_id` (`rule_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='告警规则信息表';
+
+
+-- 如果使用mysqlcdc，需要手动创建用户 用户名：canal 密码：Canal@123456
+create user 'canal'@'%' identified by 'Canal@123456';
+-- 授权 *.*表示所有库
+grant SELECT, REPLICATION SLAVE, REPLICATION CLIENT on *.* to 'canal'@'%' identified by 'Canal@123456';
+GRANT ALL PRIVILEGES ON *.* TO 'canal'@'%' IDENTIFIED BY 'Canal@123456' WITH GRANT OPTION
