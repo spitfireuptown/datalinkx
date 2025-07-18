@@ -8,7 +8,7 @@ import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.compute.connector.jdbc.TransformNode;
 import com.datalinkx.compute.transform.ITransformDriver;
 import com.datalinkx.compute.transform.ITransformFactory;
-import com.datalinkx.datajob.transmitter.AlarmProduceTransmitter;
+import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
 import com.datalinkx.driver.dsdriver.IDsWriter;

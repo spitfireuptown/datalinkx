@@ -7,7 +7,7 @@ import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.datajob.job.ExecutorJobHandler;
-import com.datalinkx.datajob.transmitter.AlarmProduceTransmitter;
+import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsWriter;
 import com.datalinkx.driver.dsdriver.base.meta.FlinkActionMeta;
@@ -87,10 +87,9 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     @Override
     protected void beforeExec(FlinkActionMeta unit) throws Exception {
         log.info(String.format("jobid: %s, begin from %s to %s", unit.getJobId(), unit.getReader().getTableName(), unit.getWriter().getTableName()));
-        // 同步表状态
-        IDsWriter writeDsDriver = DsDriverFactory.getDsWriter(unit.getWriter().getConnectId());
         // 是否覆盖数据
         if (unit.getCover() == 1) {
+            IDsWriter writeDsDriver = DsDriverFactory.getDsWriter(unit.getWriter().getConnectId());
             writeDsDriver.truncateData(unit.getWriter());
         }
     }

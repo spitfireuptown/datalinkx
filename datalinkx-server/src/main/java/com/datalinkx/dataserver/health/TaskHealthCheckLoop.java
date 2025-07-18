@@ -1,8 +1,12 @@
 package com.datalinkx.dataserver.health;
 
 import com.datalinkx.common.constants.MetaConstants;
+import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
+import com.datalinkx.dataserver.bean.domain.JobLogBean;
+import com.datalinkx.dataserver.repository.JobLogRepository;
+import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.rpc.client.datalinkxjob.DatalinkXJobClient;
 import com.datalinkx.rpc.client.flink.FlinkClient;
 import com.datalinkx.rpc.client.flink.response.FlinkJobOverview;
@@ -24,6 +28,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_ERROR;
+
 
 @Configuration
 @Slf4j
@@ -44,6 +50,12 @@ public class TaskHealthCheckLoop implements InitializingBean {
 
     @Autowired
     DatalinkXJobClient datalinkXJobClient;
+
+    @Autowired
+    AlarmProduceTransmitter alarmProduceTransmitter;
+
+    @Autowired
+    JobLogRepository jobLogRepository;
 
 
     @Override
@@ -172,15 +184,36 @@ public class TaskHealthCheckLoop implements InitializingBean {
      * @param jobId
      */
     public void retryTime(String jobId) {
-        // TODO webhook 通知
-        jobRepository.addRetryTime(jobId);
+        try {
+            JobBean jobBean = jobRepository.findByJobId(jobId).orElseThrow(() -> new DatalinkXJobException("job not found"));
+            jobBean.setRetryTime(jobBean.getRetryTime() + 1);
+            String errorMsg = "系统异常，流式任务重试";
+            if (jobBean.getRetryTime() >= 5) {
+                alarmProduceTransmitter.pushAlarmMessage(jobId, JOB_STATUS_ERROR, String.format("实时任务：%s 触发异常，超过最大重试次数！", jobBean.getName()));
+                jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_ERROR);
+                errorMsg = String.format("实时任务：%s 触发异常，超过最大重试次数！", jobBean.getName());
+            }
+            jobRepository.save(jobBean);
+            JobLogBean jobLogBean = JobLogBean.builder()
+                    .jobId(jobId)
+                    .status(1)
+                    .costTime(0)
+                    .count("{}")
+                    .endTime(new Timestamp(System.currentTimeMillis()))
+                    .startTime(new Timestamp(System.currentTimeMillis()))
+                    .errorMsg(errorMsg)
+                    .build();
+            jobLogRepository.save(jobLogBean);
+        } catch (DatalinkXJobException e) {
+            log.error("Error occurred while retrying job {}", jobId, e);
+        }
     }
 
     /**
      * 提交流式任务
      * @param jobId
      */
-    public void runStreamTask(Set<String> runningJobs, String jobId) {
+    public synchronized void runStreamTask(Set<String> runningJobs, String jobId) {
         String lockId = UUID.randomUUID().toString();
         boolean isLock = distributedLock.lock(jobId, lockId, DistributedLock.LOCK_TIME);
         try {

@@ -1,4 +1,4 @@
-package com.datalinkx.datajob.transmitter;
+package com.datalinkx.messagehub.transmitter;
 
 import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.utils.JsonUtils;
