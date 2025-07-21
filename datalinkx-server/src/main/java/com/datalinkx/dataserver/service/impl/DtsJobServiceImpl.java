@@ -139,7 +139,7 @@ public class DtsJobServiceImpl implements DtsJobService {
                 .reader(reader)
                 .writer(writer)
                 .commonSettings(commonSettings)
-                .checkpoint(jobBean.getCheckpoint())
+                .checkpointPath(jobBean.getCheckpoint())
                 .build();
         return DatalinkXJobDetail.builder().jobId(jobId).type(MetaConstants.JobType.JOB_TYPE_STREAM).syncUnit(syncUnit).build();
     }

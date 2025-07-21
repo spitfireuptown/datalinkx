@@ -8,7 +8,6 @@ import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.datajob.job.ExecutorStreamJobHandler;
 
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
-import com.datalinkx.driver.dsdriver.base.meta.FlinkActionMeta;
 import com.datalinkx.driver.dsdriver.base.meta.StreamFlinkActionMeta;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
@@ -58,7 +57,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
         // 修改任务状态，存储checkpoint
         datalinkXServerClient.updateJobStatus(JobStateForm.builder().jobId(unit.getJobId())
                 .jobStatus(status).endTime(new Date().getTime())
-                .checkpoint(unit.getCheckpoint())
+                .checkpoint(unit.getCheckpointPath())
                 .errmsg(errmsg)
                 .build());
     }
@@ -71,7 +70,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     protected void execute(StreamFlinkActionMeta unit) throws Exception {
         synchronized (this) {
             Map<String, Object> commonSettings = unit.getCommonSettings();
-            commonSettings.put("savePointPath", unit.getCheckpoint());
+            commonSettings.put("savePointPath", unit.getCheckpointPath());
             String taskId = streamExecutorJobHandler.execute(unit.getJobId(), unit.getReaderDsInfo(), unit.getWriterDsInfo(), commonSettings);
             unit.setTaskId(taskId);
             // 更新task
@@ -134,7 +133,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
                 JsonNode savepoint = latestResult.get("savepoint");
                 if (!ObjectUtils.isEmpty(savepoint) && !ObjectUtils.isEmpty(savepoint.get("external_path"))) {
                     String checkpointPath = savepoint.get("external_path").toString();
-                    unit.setCheckpoint(checkpointPath);
+                    unit.setCheckpointPath(checkpointPath);
                 }
             }
         }
@@ -146,6 +145,8 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
         Object readerDsInfo = DsDriverFactory.getStreamDriver(info.getSyncUnit().getReader().getConnectId()).getReaderInfo(info.getSyncUnit().getReader());
 
         // 实时任务的writer不一定是流式数据源
+        // 可能是binlog -> oracle，binlog -> es
+        // 也可能是binlog -> binlog
         Object writerDsInfo;
         if (MetaConstants.DsType.STREAM_DB_LIST.contains(info.getSyncUnit().getWriter().getType())) {
             writerDsInfo = DsDriverFactory.getStreamDriver(info.getSyncUnit().getWriter().getConnectId()).getWriterInfo(info.getSyncUnit().getWriter());
@@ -170,7 +171,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
         return StreamFlinkActionMeta.builder()
                 .writerDsInfo(JsonUtils.toJson(writerDsInfo))
                 .readerDsInfo(JsonUtils.toJson(readerDsInfo))
-                .checkpoint(info.getSyncUnit().getCheckpoint())
+                .checkpointPath(info.getSyncUnit().getCheckpointPath())
                 .commonSettings(info.getSyncUnit().getCommonSettings())
                 .jobId(info.getJobId())
                 .lockId(info.getLockId())

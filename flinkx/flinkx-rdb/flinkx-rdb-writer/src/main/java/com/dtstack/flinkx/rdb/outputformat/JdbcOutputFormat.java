@@ -262,7 +262,7 @@ public class JdbcOutputFormat extends BaseRichOutputFormat {
     protected void writeMultipleRecordsInternal() throws Exception {
         try {
             for (Row row : rows) {
-                for (int index = 0; index < row.getArity(); index++) {
+                for (int index = 0; index < column.size(); index++) {
                     preparedStatement.setObject(index+1, getField(row, index));
                 }
                 preparedStatement.addBatch();

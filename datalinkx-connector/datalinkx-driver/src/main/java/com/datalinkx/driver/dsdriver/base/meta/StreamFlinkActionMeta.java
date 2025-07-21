@@ -24,7 +24,7 @@ import java.util.Map;
 public class StreamFlinkActionMeta extends EngineActionMeta {
     String readerDsInfo;
     String writerDsInfo;
-    String checkpoint;
+    String checkpointPath;
     String lockId;
     Map<String, Object> commonSettings;
 }

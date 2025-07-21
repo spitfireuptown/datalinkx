@@ -168,17 +168,17 @@ public class StreamJobServiceImpl implements StreamJobService {
     public void streamJobExec(String jobId, String lockId) {
         DatalinkXJobDetail jobExecInfo = dtsJobService.getStreamJobExecInfo(jobId);
         jobExecInfo.setLockId(lockId);
-        if (!ObjectUtils.isEmpty(jobExecInfo.getSyncUnit().getCheckpoint())) {
-            String checkpoint = jobExecInfo.getSyncUnit().getCheckpoint().replace("file://", "");
+        if (!ObjectUtils.isEmpty(jobExecInfo.getSyncUnit().getCheckpointPath())) {
+            String checkpoint = jobExecInfo.getSyncUnit().getCheckpointPath().replace("file://", "");
             // 如果之前记录的checkpoint目录存在，则删除
             File directory = new File(checkpoint);
             if (directory.exists()) {
                 File[] files = directory.listFiles();
                 if (!ObjectUtils.isEmpty(files)) {
-                    jobExecInfo.getSyncUnit().setCheckpoint(files[0].getPath());
+                    jobExecInfo.getSyncUnit().setCheckpointPath(files[0].getPath());
                 }
             } else {
-                jobExecInfo.getSyncUnit().setCheckpoint("");
+                jobExecInfo.getSyncUnit().setCheckpointPath("");
             }
         }
         datalinkXJobClient.dataTransExec(JsonUtils.toJson(jobExecInfo));

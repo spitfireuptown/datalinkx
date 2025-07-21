@@ -188,7 +188,6 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
             }
         }
 
-        unitParam.setWriteBytes(bytes.get());
         unitParam.setReadRecords(readRecords.get());
         unitParam.setWriteRecords(writeRecords.get() - errorRecords.get());
 

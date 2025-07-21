@@ -36,7 +36,7 @@ public class DatalinkXJobDetail {
         Reader reader;
         Writer writer;
         Compute compute;
-        String checkpoint;
+        String checkpointPath;
         // 公共配置
         Map<String, Object> commonSettings;
     }
