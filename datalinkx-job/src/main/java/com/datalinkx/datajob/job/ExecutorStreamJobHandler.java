@@ -39,7 +39,7 @@ public class ExecutorStreamJobHandler extends ExecutorJobHandler {
         // 如果开启checkpoint定义定时规则，每到flink.checkpoint.interval写入一批事务
         Boolean checkpointEnable = (Boolean) otherSetting.get(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE);
         if (checkpointEnable) {
-            executeCmd += String.format(" -confProp \"{\"flink.checkpoint.interval\":%s}\" ", otherSetting.getOrDefault(KEY_CHECKPOINT_INTERVAL, 60));
+            executeCmd += String.format(" -confProp {\\\"flink.checkpoint.interval\\\":%s} ", otherSetting.getOrDefault(KEY_CHECKPOINT_INTERVAL, 6000));
         }
 
         if (!ObjectUtils.isEmpty(otherSetting.get("savePointPath"))) {

@@ -1,11 +1,14 @@
 package com.datalinkx.rpc.client.flink.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Data;
 
+@Builder
 @Data
-public class FlinkJobStopReq {
+public class FlinkSavepointReq {
     @JsonProperty("target-directory")
     private String targetDirectory;
-    private Boolean drain;
+    @JsonProperty("cancel-job")
+    private Boolean cancelJob;
 }

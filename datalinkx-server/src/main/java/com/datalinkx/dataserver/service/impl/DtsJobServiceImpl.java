@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -112,6 +113,7 @@ public class DtsJobServiceImpl implements DtsJobService {
         commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INTERVAL, commonProperties.getCheckpointInterval());
         commonSettings.put(MetaConstants.CommonConstant.KEY_RESTORE_COLUMN_INDEX, syncModeForm.getRestoreColumnIndex());
         commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE, syncModeForm.getCheckpoint());
+        commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INIT_ADDRESS, commonProperties.getCheckpointPath());
 
         List<String> dsIds = new ArrayList<>(Arrays.asList(jobBean.getReaderDsId(), jobBean.getWriterDsId()));
         Map<String, DsBean> dsId2Object = dsRepository.findAllByDsIdIn(dsIds)
@@ -141,6 +143,20 @@ public class DtsJobServiceImpl implements DtsJobService {
                 .commonSettings(commonSettings)
                 .checkpointPath(jobBean.getCheckpoint())
                 .build();
+
+        // 如果开启断点续传
+        if (syncModeForm.getCheckpoint() && !ObjectUtils.isEmpty(syncUnit.getCheckpointPath())) {
+            String checkpoint = syncUnit.getCheckpointPath().replace("file://", "");
+            File directory = new File(checkpoint);
+            if (directory.exists()) {
+                File[] files = directory.listFiles();
+                if (!com.datalinkx.common.utils.ObjectUtils.isEmpty(files)) {
+                    syncUnit.setCheckpointPath(files[0].getPath());
+                }
+            } else {
+                syncUnit.setCheckpointPath("");
+            }
+        }
         return DatalinkXJobDetail.builder().jobId(jobId).type(MetaConstants.JobType.JOB_TYPE_STREAM).syncUnit(syncUnit).build();
     }
 

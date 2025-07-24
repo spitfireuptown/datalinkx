@@ -54,7 +54,7 @@ data-transfer:
   # 读fetch-size行数据的查询超时时间
   query-time-out: 10000
   # 流式checkpoint地址
-  checkpoint-path: file:///tmp
+  checkpoint-path: file:///${user.dir}/checkpoint
   # 触发checkpoint时间间隔
   checkpoint-interval: 6000
   # kafka读取规则

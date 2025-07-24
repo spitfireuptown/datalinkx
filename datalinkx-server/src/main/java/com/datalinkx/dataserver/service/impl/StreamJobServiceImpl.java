@@ -168,19 +168,6 @@ public class StreamJobServiceImpl implements StreamJobService {
     public void streamJobExec(String jobId, String lockId) {
         DatalinkXJobDetail jobExecInfo = dtsJobService.getStreamJobExecInfo(jobId);
         jobExecInfo.setLockId(lockId);
-        if (!ObjectUtils.isEmpty(jobExecInfo.getSyncUnit().getCheckpointPath())) {
-            String checkpoint = jobExecInfo.getSyncUnit().getCheckpointPath().replace("file://", "");
-            // 如果之前记录的checkpoint目录存在，则删除
-            File directory = new File(checkpoint);
-            if (directory.exists()) {
-                File[] files = directory.listFiles();
-                if (!ObjectUtils.isEmpty(files)) {
-                    jobExecInfo.getSyncUnit().setCheckpointPath(files[0].getPath());
-                }
-            } else {
-                jobExecInfo.getSyncUnit().setCheckpointPath("");
-            }
-        }
         datalinkXJobClient.dataTransExec(JsonUtils.toJson(jobExecInfo));
     }
 
@@ -216,43 +203,18 @@ public class StreamJobServiceImpl implements StreamJobService {
             String checkpoint = String.format("%s/%s", commonProperties.getCheckpointPath(), jobBean.getJobId());
 
             // 如果之前记录的checkpoint目录存在，则删除
-            File directory = new File(checkpoint);
-            if (!directory.exists()) {
-                File[] files = directory.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        file.delete();
-                    }
-                }
-            }
+//            File directory = new File(checkpoint);
+//            if (!directory.exists()) {
+//                File[] files = directory.listFiles();
+//                if (files != null) {
+//                    for (File file : files) {
+//                        file.delete();
+//                    }
+//                }
+//            }
 
-            boolean isRunning = true;
-            while (isRunning) {
-                flinkJobStopReq.setTargetDirectory(checkpoint);
-                flinkClient.jobStop(jobBean.getTaskId(), flinkJobStopReq);
-
-
-                // 检查任务是否已经停止
-                JsonNode jsonNode = flinkClient.jobOverview();
-                Map<String, FlinkJobOverview> jobId2TaskInfo = JsonUtils.toList(JsonUtils.toJson(jsonNode.get("jobs")), FlinkJobOverview.class)
-                        .stream()
-                        .filter(task -> "RUNNING".equalsIgnoreCase(task.getState()))
-                        .collect(Collectors.toMap(FlinkJobOverview::getName, v -> v));
-
-                if (jobId2TaskInfo.containsKey(jobBean.getJobId())) {
-
-                    FlinkJobOverview flinkJobOverview = jobId2TaskInfo.remove(jobBean.getJobId());
-                    flinkClient.jobStop(flinkJobOverview.getJid(), flinkJobStopReq);
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        throw new DatalinkXServerException(e);
-                    }
-                } else {
-                    isRunning = false;
-                }
-            }
+            flinkJobStopReq.setTargetDirectory(checkpoint);
+            flinkClient.jobStop(jobBean.getTaskId(), flinkJobStopReq);
             jobBean.setCheckpoint(checkpoint);
         }
     }

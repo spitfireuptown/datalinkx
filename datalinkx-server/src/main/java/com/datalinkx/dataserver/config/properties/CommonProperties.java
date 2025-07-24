@@ -21,7 +21,7 @@ public class CommonProperties {
     Integer streamBatchSize;
     @Value("${data-transfer.checkpoint-interval:6000}")
     Integer checkpointInterval;
-    @Value("${data-transfer.checkpoint-path:file:///tmp}")
+    @Value("${data-transfer.checkpoint-path}")
     String checkpointPath;
     @Value("${data-transfer.query-time-out:10000}")
     Integer queryTimeOut;

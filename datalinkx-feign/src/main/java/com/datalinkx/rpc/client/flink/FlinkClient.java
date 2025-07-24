@@ -1,6 +1,7 @@
 package com.datalinkx.rpc.client.flink;
 
 import com.datalinkx.rpc.client.flink.request.FlinkJobStopReq;
+import com.datalinkx.rpc.client.flink.request.FlinkSavepointReq;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -26,6 +27,9 @@ public interface FlinkClient {
 
     @RequestMapping("/jobs/{jobId}/checkpoints")
     JsonNode jobCheckpoint(@PathVariable("jobId") String jobId);
+
+    @RequestMapping("/jobs/{jobId}/savepoints")
+    JsonNode jobSavePoints(@PathVariable("jobId") String jobId, @RequestBody FlinkSavepointReq flinkSavepointReq);
 
     @RequestMapping("/jobs/{jobId}/stop")
     JsonNode jobStop(@PathVariable("jobId") String jobId, @RequestBody FlinkJobStopReq flinkJobStopReq);

@@ -12,6 +12,7 @@ import com.datalinkx.driver.dsdriver.base.meta.StreamFlinkActionMeta;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
 import com.datalinkx.rpc.client.flink.FlinkClient;
+import com.datalinkx.rpc.client.flink.request.FlinkSavepointReq;
 import com.datalinkx.rpc.client.flink.response.FlinkJobStatus;
 import com.datalinkx.stream.lock.DistributedLock;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -109,9 +110,26 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
         // 看门狗，续约分布式锁，防止其他节点重复提交任务
         distributedLock.renewLock(unit.getJobId(), unit.getLockId(), DistributedLock.LOCK_TIME);
 
+        // 定时备份checkpoint
+        Boolean checkpointEnable = (Boolean) unit.getCommonSettings().get(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE);
+        String checkpointPath = ObjectUtils.isEmpty(unit.getCheckpointPath())
+                ? (String) unit.getCommonSettings().get(MetaConstants.CommonConstant.KEY_CHECKPOINT_INIT_ADDRESS)
+                : unit.getCheckpointPath();
+
+        if (!ObjectUtils.isEmpty(checkpointEnable) && checkpointEnable) {
+            flinkClient.jobSavePoints(
+                    unit.getTaskId(),
+                    FlinkSavepointReq
+                            .builder()
+                            .targetDirectory(checkpointPath)
+                            .cancelJob(false)
+                            .build()
+            );
+        }
+
         // 流式任务不用检测太频繁，歇会
         try {
-            Thread.sleep(5000);
+            Thread.sleep(300000);
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
         }
