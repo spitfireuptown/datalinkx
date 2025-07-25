@@ -5,7 +5,6 @@ import lombok.Data;
 
 @Data
 public class FlinkJobStopReq {
-    @JsonProperty("target-directory")
     private String targetDirectory;
     private Boolean drain;
 }

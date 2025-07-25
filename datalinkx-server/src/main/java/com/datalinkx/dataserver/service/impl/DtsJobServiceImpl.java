@@ -113,7 +113,7 @@ public class DtsJobServiceImpl implements DtsJobService {
         commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INTERVAL, commonProperties.getCheckpointInterval());
         commonSettings.put(MetaConstants.CommonConstant.KEY_RESTORE_COLUMN_INDEX, syncModeForm.getRestoreColumnIndex());
         commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE, syncModeForm.getCheckpoint());
-        commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INIT_ADDRESS, commonProperties.getCheckpointPath());
+        commonSettings.put(MetaConstants.CommonConstant.KEY_CHECKPOINT_INIT_ADDRESS, String.format("%s/%s", commonProperties.getCheckpointPath(), jobBean.getJobId()));
 
         List<String> dsIds = new ArrayList<>(Arrays.asList(jobBean.getReaderDsId(), jobBean.getWriterDsId()));
         Map<String, DsBean> dsId2Object = dsRepository.findAllByDsIdIn(dsIds)

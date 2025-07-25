@@ -180,13 +180,7 @@ public class StreamJobServiceImpl implements StreamJobService {
         }
 
         // 记录checkpoint
-        try {
-
-            this.stopFlinkTask(jobBean);
-        } catch (Exception e) {
-
-            log.error("checkpoint失败", e);
-        }
+        this.stopFlinkTask(jobBean);
 
         jobBean.setStatus(JOB_STATUS_STOP);
         jobRepository.save(jobBean);

@@ -45,6 +45,7 @@ rebel-remote.xml
 .idea/
 plugins/
 driver-dist
+checkpoint
 lib/
 jobs/
 nohup.out
