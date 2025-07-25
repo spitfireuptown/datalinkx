@@ -150,7 +150,9 @@ public class DtsJobServiceImpl implements DtsJobService {
             File directory = new File(checkpoint);
             if (directory.exists()) {
                 File[] files = directory.listFiles();
-                if (!com.datalinkx.common.utils.ObjectUtils.isEmpty(files)) {
+                if (!ObjectUtils.isEmpty(files)) {
+                    // 按最后修改时间降序排序（最近修改的文件在前）
+                    Arrays.sort(files, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
                     syncUnit.setCheckpointPath(files[0].getPath());
                 }
             } else {
