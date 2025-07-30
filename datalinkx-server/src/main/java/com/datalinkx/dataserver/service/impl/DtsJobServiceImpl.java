@@ -146,7 +146,7 @@ public class DtsJobServiceImpl implements DtsJobService {
 
         // 如果开启断点续传
         if (syncModeForm.getCheckpoint() && !ObjectUtils.isEmpty(syncUnit.getCheckpointPath())) {
-            String checkpoint = syncUnit.getCheckpointPath().replace("file://", "");
+            String checkpoint = syncUnit.getCheckpointPath().replace("file:/", "");
             File directory = new File(checkpoint);
             if (directory.exists()) {
                 File[] files = directory.listFiles();
@@ -349,6 +349,11 @@ public class DtsJobServiceImpl implements DtsJobService {
         jobBean.setCount(JsonUtils.toJson(countVo));
         jobBean.setErrorMsg(StringUtils.equalsIgnoreCase(jobStateForm.getErrmsg(), "success") ? "任务成功"
                 : jobStateForm.getErrmsg() == null ? "" : jobStateForm.getErrmsg());
+
+        if (!ObjectUtils.isEmpty(jobStateForm.getCheckpoint())) {
+            jobBean.setCheckpoint(jobStateForm.getCheckpoint());
+        }
+
         jobRepository.save(jobBean);
 
         // 3、保存流转任务执行日志

@@ -30,6 +30,7 @@ public class DistributedLock {
 	private RedisSerializer<String> argsSerializer;
 	private RedisSerializer<String> resultSerializer;
 	public static Integer LOCK_TIME = 60;
+	public static Integer STREAM_LOCK_TIME = 300;
 
 	@Autowired
 	private RedisTemplate<String, String> redisTemplate;

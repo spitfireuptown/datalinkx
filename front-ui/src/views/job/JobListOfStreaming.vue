@@ -50,8 +50,8 @@ const StatusType = [
     color: '#faad14'
   },
   {
-    label: '排队中',
-    value: 5,
+    label: '停止中',
+    value: 6,
     color: '#ad14fa'
   }
 ]

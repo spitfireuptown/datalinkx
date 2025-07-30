@@ -16,6 +16,7 @@ public class JobStateForm {
     private Long startTime;
     private Long endTime;
     private String errmsg;
+    private String checkpoint;
     private Long readCount = 0L;
     private Long writeCount = 0L;
 }

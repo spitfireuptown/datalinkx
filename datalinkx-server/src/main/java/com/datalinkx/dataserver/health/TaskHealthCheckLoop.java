@@ -215,7 +215,7 @@ public class TaskHealthCheckLoop implements InitializingBean {
      */
     public synchronized void runStreamTask(Set<String> runningJobs, String jobId) {
         String lockId = UUID.randomUUID().toString();
-        boolean isLock = distributedLock.lock(jobId, lockId, DistributedLock.LOCK_TIME);
+        boolean isLock = distributedLock.lock(jobId, lockId, DistributedLock.STREAM_LOCK_TIME);
         try {
             // 拿到了流式任务的锁就提交任务，任务状态在datalinkx-job提交流程中更改
             if (isLock) {

@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.datalinkx.common.constants.MessageHubConstants.GLOBAL_COMMON_GROUP;
+
 /**
  * @author: uptown
  * @date: 2024/4/27 14:23
@@ -108,7 +110,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
             return true;
         }
         // 看门狗，续约分布式锁，防止其他节点重复提交任务
-        distributedLock.renewLock(unit.getJobId(), unit.getLockId(), DistributedLock.LOCK_TIME);
+        distributedLock.renewLock(unit.getJobId(), unit.getLockId(), DistributedLock.STREAM_LOCK_TIME);
 
         // 定时备份checkpoint
         Boolean checkpointEnable = (Boolean) unit.getCommonSettings().get(MetaConstants.CommonConstant.KEY_CHECKPOINT_ENABLE);
@@ -129,7 +131,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
 
         // 流式任务不用检测太频繁，歇会
         try {
-            Thread.sleep(300000);
+            Thread.sleep(60000);
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
         }
@@ -198,6 +200,6 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
 
     @Override
     protected void destroyed(StreamFlinkActionMeta unit, int status, String errmsg) {
-
+        distributedLock.unlock(unit.getJobId(), unit.getLockId());
     }
 }

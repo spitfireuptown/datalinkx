@@ -23,6 +23,7 @@ import com.datalinkx.rpc.client.flink.FlinkClient;
 import com.datalinkx.rpc.client.flink.request.FlinkJobStopReq;
 import com.datalinkx.rpc.client.flink.response.FlinkJobOverview;
 import com.datalinkx.rpc.util.ApplicationContextUtil;
+import com.datalinkx.stream.lock.DistributedLock;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,9 @@ public class StreamJobServiceImpl implements StreamJobService {
 
     @Autowired
     CommonProperties commonProperties;
+
+    @Autowired
+    DistributedLock distributedLock;
 
 
     @Override
@@ -118,6 +122,10 @@ public class StreamJobServiceImpl implements StreamJobService {
         if (MetaConstants.JobStatus.JOB_STATUS_QUEUE == jobBean.getStatus()) {
             throw new DatalinkXServerException(StatusCode.JOB_IS_RUNNING, "任务排队中");
         }
+        if (MetaConstants.JobStatus.JOB_STATUS_STOPPING == jobBean.getStatus()) {
+            throw new DatalinkXServerException(StatusCode.JOB_IS_RUNNING, "任务正在停止中");
+        }
+
         jobBean.setRetryTime(0);
         jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_SYNCING);
         jobRepository.save(jobBean);
@@ -175,14 +183,14 @@ public class StreamJobServiceImpl implements StreamJobService {
     @Override
     public void stop(String jobId) {
         JobBean jobBean = jobRepository.findByJobId(jobId).orElseThrow(() -> new DatalinkXServerException(StatusCode.JOB_NOT_EXISTS, "job not exist"));
-        if (JOB_STATUS_STOP == jobBean.getStatus()) {
+        if (MetaConstants.JobStatus.JOB_STATUS_STOPPING == jobBean.getStatus()) {
             return;
         }
 
         // 记录checkpoint
         this.stopFlinkTask(jobBean);
 
-        jobBean.setStatus(JOB_STATUS_STOP);
+        jobBean.setStatus(MetaConstants.JobStatus.JOB_STATUS_STOPPING);
         jobRepository.save(jobBean);
     }
 
@@ -196,20 +204,8 @@ public class StreamJobServiceImpl implements StreamJobService {
             flinkJobStopReq.setDrain(true);
             String checkpoint = String.format("%s/%s", commonProperties.getCheckpointPath(), jobBean.getJobId());
 
-            // 如果之前记录的checkpoint目录存在，则删除
-//            File directory = new File(checkpoint);
-//            if (!directory.exists()) {
-//                File[] files = directory.listFiles();
-//                if (files != null) {
-//                    for (File file : files) {
-//                        file.delete();
-//                    }
-//                }
-//            }
-
             flinkJobStopReq.setTargetDirectory(checkpoint);
             flinkClient.jobStop(jobBean.getTaskId(), flinkJobStopReq);
-            jobBean.setCheckpoint(checkpoint);
         }
     }
 

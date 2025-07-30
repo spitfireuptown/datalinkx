@@ -62,6 +62,7 @@ public final class MetaConstants {
         public static final int JOB_STATUS_ERROR = 3;
         public static final int JOB_STATUS_STOP = 4;
         public static final int JOB_STATUS_QUEUE = 5;
+        public static final int JOB_STATUS_STOPPING = 6;
 
         public static final String SEATUNNEL_JOB_FINISH = "FINISHED";
         public static final String SEATUNNEL_JOB_RUNNING = "RUNNING";

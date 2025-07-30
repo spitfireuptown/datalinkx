@@ -5,9 +5,7 @@ import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.utils.IdUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_ERROR;
-import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_SUCCESS;
-
+import static com.datalinkx.common.constants.MetaConstants.JobStatus.*;
 
 
 @Slf4j
@@ -64,8 +62,15 @@ public abstract class AbstractDataTransferAction<T extends DatalinkXJobDetail, U
             // 阻塞至任务完成
             taskCheckerThread.start();
             taskCheckerThread.join();
-            if (error.length() != 0 ) {
-                status = JOB_STATUS_ERROR;
+            if (error.length() != 0) {
+                // 用户手动取消的任务把状态置为停止
+                if (error.toString().contains("data-transfer task canceled")) {
+
+                    status = JOB_STATUS_STOP;
+                } else {
+
+                    status = JOB_STATUS_ERROR;
+                }
             }
 
             // 5、整个Job结束后的处理
