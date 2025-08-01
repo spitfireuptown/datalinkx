@@ -13,14 +13,6 @@ public final class MetaConstants {
      * 数据源类型管理
      */
     public static class DsType {
-        // 数据源类型
-//        public static final Integer MYSQL = 1;
-//        public static final Integer ELASTICSEARCH = 2;
-//        public static final Integer ORACLE = 3;
-//        public static final Integer REDIS = 4;
-//        public static final Integer HTTP = 5;
-//        public static final Integer KAFKA = 100;
-
         // 命名规则与包名一样
         public static final String DS_MYSQL = "mysql";
         public static final String DS_ELASTICSEARCH = "es";

@@ -83,7 +83,7 @@
 3. 任务管理
    1. 批式任务：配置from_db与to_db构造job_graph
    ![img.png](datalinkx-server/src/main/resources/readme/job_config.png)
-   2. 批式任务：配置from_db与to_db构造job_graph，仅支持kafka
+   2. 实时任务：配置from_db与to_db构造job_graph，仅支持kafka
    ![img.png](datalinkx-server/src/main/resources/readme/stream_job_config.png)
    3. 计算任务: 配置画布信息，支持transform算子操作
    ![img.png](datalinkx-server/src/main/resources/readme/transform_job_config.png)

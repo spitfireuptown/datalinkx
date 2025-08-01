@@ -1,6 +1,5 @@
 package com.datalinkx.dataserver.controller;
 
-import com.datalinkx.common.exception.DatalinkXServerException;
 import com.datalinkx.common.result.WebResult;
 import com.datalinkx.dataserver.bean.domain.DsBean;
 import com.datalinkx.dataserver.bean.vo.PageVo;
@@ -11,7 +10,6 @@ import com.datalinkx.dataserver.service.impl.DsServiceImpl;
 import com.datalinkx.driver.dsdriver.base.meta.DbTableField;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -58,12 +56,7 @@ public class DsController {
 
 	@GetMapping("/info/{dsId}")
 	public WebResult<DsBean> info(@PathVariable String dsId) {
-		try {
-			return WebResult.of(dsServiceImpl.info(dsId));
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw new DatalinkXServerException(e);
-		}
+		return WebResult.of(dsServiceImpl.info(dsId));
 	}
 
 	@PostMapping("/modify")
