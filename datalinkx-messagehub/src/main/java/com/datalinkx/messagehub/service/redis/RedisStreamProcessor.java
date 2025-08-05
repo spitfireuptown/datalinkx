@@ -29,7 +29,8 @@ import org.yaml.snakeyaml.tokens.ScalarToken;
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @Service("redisStreamProcessor")
 public class RedisStreamProcessor extends MessageHubServiceImpl {
-
+    // 添加静态锁对象
+    private static final Object GROUP_LOCK = new Object();
 
     @Override
     public void produce(ProducerAdapterForm producerAdapterForm) {
@@ -52,27 +53,25 @@ public class RedisStreamProcessor extends MessageHubServiceImpl {
 
         new Thread(() -> {
             String lastOffset = null;
-
             StreamOperations<String, String, Object> streamOperations = this.stringRedisTemplate.opsForStream();
-
-            if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(topic))) {
-                StreamInfo.XInfoGroups groups = streamOperations.groups(topic);
-
-                AtomicReference<Boolean> groupHasKey = new AtomicReference<>(false);
-
-                groups.forEach(groupInfo -> {
-                    if (Objects.equals(group, groupInfo.getRaw().get("name"))) {
-                        groupHasKey.set(true);
+            // 对消费者组创建逻辑加锁
+            synchronized (GROUP_LOCK) {
+                if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(topic))) {
+                    StreamInfo.XInfoGroups groups = streamOperations.groups(topic);
+                    AtomicReference<Boolean> groupHasKey = new AtomicReference<>(false);
+                    groups.forEach(groupInfo -> {
+                        if (Objects.equals(group, groupInfo.getRaw().get("name"))) {
+                            groupHasKey.set(true);
+                        }
+                    });
+                    if (groups.isEmpty() || !groupHasKey.get()) {
+                        String groupName = streamOperations.createGroup(topic, group);
+                        log.info("messagehub stream creatGroup:{}", groupName);
                     }
-                });
-
-                if (groups.isEmpty() || !groupHasKey.get()) {
+                } else {
                     String groupName = streamOperations.createGroup(topic, group);
                     log.info("messagehub stream creatGroup:{}", groupName);
                 }
-            } else {
-                String groupName = streamOperations.createGroup(topic, group);
-                log.info("messagehub stream creatGroup:{}", groupName);
             }
 
             while (true) {

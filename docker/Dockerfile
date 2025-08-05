@@ -1,15 +1,9 @@
 FROM maven:3.6.3-openjdk-8
 
 #maven:3.6.3-openjdk-8中更换源debian:10
+RUN echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list
 
-RUN sed -i "1ideb https://mirrors.aliyun.com/debian/ buster main non-free contrib" /etc/apt/sources.list
-RUN sed -i "2ideb-src https://mirrors.aliyun.com/debian/ buster main non-free contrib" /etc/apt/sources.list
-RUN sed -i "3ideb https://mirrors.aliyun.com/debian-security buster/updates main" /etc/apt/sources.list
-RUN sed -i "4ideb-src https://mirrors.aliyun.com/debian-security buster/updates main" /etc/apt/sources.list
-RUN sed -i "5ideb https://mirrors.aliyun.com/debian/ buster-updates main non-free contrib" /etc/apt/sources.list
-RUN sed -i "6ideb-src https://mirrors.aliyun.com/debian/ buster-updates main non-free contrib" /etc/apt/sources.list
-
-RUN apt update && apt install git
+RUN apt update -y && apt install -y git
 
 #切换目录，指定源码克隆后保存位置
 WORKDIR /
