@@ -1,8 +1,6 @@
 package com.datalinkx.common.exception;
 
-import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 public class DatalinkXJobException extends RuntimeException {

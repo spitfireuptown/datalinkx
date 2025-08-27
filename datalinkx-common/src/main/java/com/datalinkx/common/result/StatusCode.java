@@ -2,6 +2,7 @@ package com.datalinkx.common.result;
 
 import lombok.Getter;
 
+@Getter
 public enum StatusCode {
     API_INTERNAL_ERROR(500),
     DS_NOT_EXISTS(101),
@@ -20,7 +21,6 @@ public enum StatusCode {
 
     private final int value;
 
-    @Getter
     private String msg;
 
 
@@ -33,10 +33,6 @@ public enum StatusCode {
         this.msg = msg;
     }
 
-
-    public int getValue() {
-        return this.value;
-    }
 
     public static StatusCode getByCode(int code) {
         for (StatusCode enums : StatusCode.values()) {

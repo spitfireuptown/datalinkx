@@ -4,8 +4,10 @@ import java.util.Map;
 
 import com.datalinkx.common.result.StatusCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
 
+@Getter
 public class DatalinkXServerException extends RuntimeException {
 	private static final long serialVersionUID = -940285811464169752L;
 
@@ -37,7 +39,4 @@ public class DatalinkXServerException extends RuntimeException {
 		status = StatusCode.API_INTERNAL_ERROR;
 	}
 
-	public StatusCode getStatus() {
-		return status;
-	}
 }
