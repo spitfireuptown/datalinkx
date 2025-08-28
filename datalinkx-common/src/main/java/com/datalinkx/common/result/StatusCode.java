@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum StatusCode {
+    SUCCESS(0),
     API_INTERNAL_ERROR(500),
     DS_NOT_EXISTS(101),
     DS_CONFIG_ERROR(102),
