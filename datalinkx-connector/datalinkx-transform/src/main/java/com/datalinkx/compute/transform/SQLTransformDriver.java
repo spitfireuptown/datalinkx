@@ -1,10 +1,10 @@
 package com.datalinkx.compute.transform;
 
 import com.datalinkx.common.constants.MetaConstants;
-import com.datalinkx.common.utils.ObjectUtils;
-import com.datalinkx.compute.connector.model.SQLNode;
 import com.datalinkx.compute.connector.jdbc.TransformNode;
+import com.datalinkx.compute.connector.model.SQLNode;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
@@ -30,11 +30,11 @@ public class SQLTransformDriver extends ITransformDriver {
     public String analysisTransferMeta(JsonNode nodeMeta) {
         JsonNode dataMeta = nodeMeta.get("data");
         String sql = String.format("select %s from %s", dataMeta.get("sqlOperatorValue").asText(), dataMeta.get("sqlOperatorFrom").asText());
-        if (ObjectUtils.isEmpty(dataMeta.get("sqlOperatorWhereValue"))) {
+        if (!StringUtils.isEmpty(dataMeta.get("sqlOperatorWhereValue").asText())) {
             sql += String.format(" where %s", dataMeta.get("sqlOperatorWhereValue").asText());
         }
 
-        if (ObjectUtils.isEmpty(dataMeta.get("sqlOperatorGroupValue"))) {
+        if (!StringUtils.isEmpty(dataMeta.get("sqlOperatorGroupValue").asText())) {
             sql += String.format(" group by %s", dataMeta.get("sqlOperatorGroupValue").asText());
         }
         return sql;
