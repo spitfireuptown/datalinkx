@@ -1,7 +1,6 @@
 package com.datalinkx.dataserver.controller.advice;
 
 
-import com.datalinkx.common.exception.DatalinkXServerException;
 import com.datalinkx.common.result.WebResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
@@ -68,17 +67,6 @@ public class ExceptionControllerAdvice {
         );
     }
 
-
-
-	/**
-	 * 统一处理自定义异样，根据状态码返回
-	 */
-	@ExceptionHandler({DatalinkXServerException.class})
-	@ResponseBody
-	public WebResult<?> databridgeExceptionHandler(DatalinkXServerException databridgeException) {
-		Throwable r = ErrorsUtils.getRootCause(databridgeException);
-        return WebResult.fail(r);
-	}
 
     /**
      * 统一处理Controller中的异常 需要统一处理异常编码

@@ -97,7 +97,7 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, Abstra
             for (Map.Entry<String, Object> paramItem : paramMap.entrySet()) {
                 paramList.add(paramItem.getKey() + "=" + paramItem.getValue());
             }
-            String paramUrl = String.join(",", paramList);
+            String paramUrl = String.join("&", paramList);
             baseUrl = String.format("%s?%s", baseUrl, paramUrl);
         }
 

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -16,18 +17,15 @@ public class WebResult<T> {
 	private String status;
 	private String errstr;
 	private String traceId;
-	private T result;
+	@Setter
+    private T result;
 
 
 	public WebResult() {
 	}
 
 
-	public void setResult(T result) {
-		this.result = result;
-	}
-
-	public WebResult<T> setStatus(String status) {
+    public WebResult<T> setStatus(String status) {
 		this.status = status;
 		this.traceId = MDC.get(TRACE_ID);
 		return this;
@@ -42,9 +40,9 @@ public class WebResult<T> {
 		if (result instanceof Optional) {
 			return of((Optional<T>) result);
 		}
-		WebResult<T> r = newInstance();
+		WebResult<T> r = new WebResult<>();;
 		r.setResult(result);
-		r.setStatus("0");
+		r.setStatus(String.valueOf(StatusCode.SUCCESS.getValue()));
 		return r;
 	}
 
@@ -56,8 +54,8 @@ public class WebResult<T> {
 
 	public static <T> WebResult<T> fail(Throwable throwable) {
 		log.error(throwable.getMessage(), throwable);
-		WebResult<T> r = newInstance();
-		r.setStatus("500");
+		WebResult<T> r = new WebResult<>();
+		r.setStatus(String.valueOf(StatusCode.API_INTERNAL_ERROR.getValue()));
 		r.setErrstr(throwable.getMessage());
 		return r;
 	}
@@ -67,15 +65,10 @@ public class WebResult<T> {
 		String msg = Optional.ofNullable(throwable.getCause())
 				.map(s -> s.getMessage() + ",")
 				.orElse("") + throwable.getMessage();
-		WebResult<T> r = newInstance();
+		WebResult<T> r = new WebResult<>();
 		r.setErrstr(msg);
 		r.setStatus(String.valueOf(StatusCode.API_INTERNAL_ERROR.getValue()));
 		r.setResult(o);
 		return r;
 	}
-
-	public static <T> WebResult<T> newInstance() {
-		return new WebResult<T>();
-	}
-
 }
