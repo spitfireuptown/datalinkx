@@ -65,7 +65,7 @@ CREATE TABLE `JOB_LOG` (
                            `cost_time` int unsigned NOT NULL,
                            `count` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
                            `end_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                           `error_msg` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+                           `error_msg` longtext CHARACTER SET utf8 COLLATE utf8_general_ci,
                            `job_id` varchar(36) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
                            `start_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '任务启动时间',
                            `status` tinyint unsigned DEFAULT NULL,

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 
@@ -24,8 +25,11 @@ public interface JobLogRepository extends CRUDRepository<JobLogBean, String> {
 
     @Modifying
     @Transactional
-    @Query(value = " update JOB_LOG set is_del = 1 where job_id = :jobId and is_del = 0 ", nativeQuery = true)
+    @Query(value = " update JobLogBean set isDel = 1 where jobId = :jobId and isDel = 0 ")
     void logicDeleteByJobId(String jobId);
+
+    @Query(value = "select j from JobLogBean j where j.jobId = :jobId and j.startTime = :startTime")
+    JobLogBean findByJobIdAndStartTime(String jobId, Timestamp startTime);
 
     List<JobLogBean> findAllByIsDel(Integer isDel);
 }

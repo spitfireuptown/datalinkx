@@ -40,8 +40,7 @@ public class JobLogBean implements Serializable {
 	@NotBlank
 	@Column(name = "count", nullable = false, columnDefinition = "text")
 	private String count;
-	@NotNull
-	@Column(name = "error_msg", nullable = false, columnDefinition = "longtext")
+	@Column(name = "error_msg", columnDefinition = "longtext")
 	private String errorMsg;
 	@Column(name = "start_time", nullable = false, columnDefinition = "timestamp")
 	private Timestamp startTime;
