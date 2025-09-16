@@ -234,10 +234,9 @@ public class TaskHealthCheckLoop implements InitializingBean {
             }
         } catch (Exception e){
             log.error("启动流式任务失败 {}", e.getMessage(), e);
-        } finally {
             try {
                 // 成功一直持有锁，失败需要释放锁，失败也不需要放入队列，定时任务会从db中扫描出来
-                distributedLock.unlock(jobId, jobId);
+                distributedLock.unlock(jobId, lockId);
             } catch (Exception ex) {
                 log.error("redis distributedLock error", ex);
             }

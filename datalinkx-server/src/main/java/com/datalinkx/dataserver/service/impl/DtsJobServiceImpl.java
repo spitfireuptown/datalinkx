@@ -262,9 +262,9 @@ public class DtsJobServiceImpl implements DtsJobService {
         compute.setTransforms(transforms);
 
         // 如果计算过程中存在SQL节点，把reader中的queryFields改成*防止SQL中引用了未映射字段导致报错
-        if (containSQLNode) {
-            syncUnit.getReader().setQueryFields("*");
-        }
+//        if (containSQLNode) {
+//            syncUnit.getReader().setQueryFields("*");
+//        }
 
         syncUnit.setCommonSettings(new HashMap<String, Object>() {{
             put("openai.api_path", commonProperties.getOllamaUrl() + "/api/chat");
