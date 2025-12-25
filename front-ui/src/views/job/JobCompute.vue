@@ -429,6 +429,19 @@
         return Boolean(this.cover)
       }
     },
+    beforeDestroy() {
+      if (this.graph) {
+        // 销毁graph实例，释放资源
+        this.graph.dispose();
+        // 清空引用，避免内存泄漏
+        this.graph = null;
+      }
+      if (this.dnd) {
+        // 销毁dnd实例
+        this.dnd.dispose();
+        this.dnd = null;
+      }
+    },
     methods: {
       handleFromTbChange (value) {
         for (const i in this.fromDsList) {

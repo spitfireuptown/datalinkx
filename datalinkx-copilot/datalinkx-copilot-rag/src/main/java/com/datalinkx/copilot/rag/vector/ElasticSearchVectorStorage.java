@@ -59,7 +59,6 @@ public class ElasticSearchVectorStorage extends VectorStorageImpl {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
-
     }
 
     @SneakyThrows
@@ -125,9 +124,7 @@ public class ElasticSearchVectorStorage extends VectorStorageImpl {
 
     private Map<String, Object> elasticMapping(int dims) {
         Map<String, Object> properties = new HashMap<>();
-        properties.put("_class", MapUtil.builder("type", "keyword").put("doc_values", "false").put("index", "false").build());
         properties.put("content", MapUtil.builder("type", "keyword").build());
-        // 向量
         properties.put("vector", MapUtil.builder("type", "dense_vector").put("dims", Objects.toString(dims)).build());
         Map<String, Object> root = new HashMap<>();
         root.put("properties", properties);

@@ -22,7 +22,7 @@ public class ClickhouseDriver extends JdbcDriver<JdbcSetupInfo, JdbcReader, Jdbc
         Map customConfig = JsonUtils.toObject(ConnectIdUtils.decodeConnectId(connectId), Map.class);
         log.info("inject custom config:{}", customConfig);
         Map innerConfig = JsonUtils.toObject((String) customConfig.get("config"), Map.class);
-        log.info("inject custom inner config:{}", customConfig);
+        log.info("inject custom inner config:{}", innerConfig);
         jdbcSetupInfo = new JdbcSetupInfo();
         jdbcSetupInfo.setPwd((String) innerConfig.get("pwd"));
         jdbcSetupInfo.setServer((String) innerConfig.get("server"));
