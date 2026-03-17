@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,7 +97,7 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
         try {
             connection = DriverManager.getConnection(url, connectProp());
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            log.warn("默认加载器未加载驱动，使用自定义加载器" );
             if (!ObjectUtils.isEmpty(urlClassLoader) && !ObjectUtils.isEmpty(injectDriver)) {
                 connection = injectDriver.connect(url, connectProp());
             }

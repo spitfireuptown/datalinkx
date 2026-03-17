@@ -142,16 +142,9 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
         }
 
         if ("failed".equalsIgnoreCase(state)) {
-            String errorMsg = "datalinkx task failed.";
-
             JsonNode jsonNode = flinkClient.jobExceptions(taskId);
-            if (jsonNode.has("all-exceptions")) {
-                Iterator<JsonNode> exceptions = jsonNode.get("all-exceptions").elements();
-                if (exceptions.hasNext()) {
-                    errorMsg = exceptions.next().get("exception").asText();
-                }
-            }
-            log.error(errorMsg);
+            String errorMsg = jsonNode.toString();
+            log.error("flink task error:", errorMsg);
             throw new DatalinkXJobException(errorMsg);
         }
 
