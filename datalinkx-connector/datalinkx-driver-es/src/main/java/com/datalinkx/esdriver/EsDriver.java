@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> implements IDsReader, IDsWriter {
@@ -161,6 +162,21 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
         List<String> indexTypeList = this.esService.getIndexType(tableName);
         String indexType = ObjectUtils.isEmpty(indexTypeList) ? "_doc" : indexTypeList.get(0);
 
+        Map<String, String> tableStructName2Type = this.getFields("", "", writer.getTableName())
+                .stream()
+                .collect(Collectors.toMap(DbTableField::getName, DbTableField::getType));
+
+        List<EsWriter.EsColumn> esColumns = writer
+                                            .getColumns()
+                                            .stream()
+                                            .map(column -> EsWriter
+                                                    .EsColumn.builder()
+                                                    .name(column)
+                                                    .type(tableStructName2Type.getOrDefault(column, "string"))
+                                                    .build()
+                                            )
+                                            .collect(Collectors.toList());
+
         writerInfo.setName("eswriter");
         writerInfo.setParameter(EsWriter.builder()
                 .address(esSetupInfo.getAddress())
@@ -170,7 +186,7 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
                 .bulkAction(DEFAULT_FETCH_SIZE)
                 .index(tableName)
                 .type(indexType)
-                .column(writer.getColumns())
+                .column(esColumns)
                 .build());
         return writerInfo;
     }
