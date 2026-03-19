@@ -21,13 +21,12 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
     private static final long ES_TIMEOUT = 3000L;
     private static final long DEFAULT_FETCH_SIZE = 10000L;
 
-    private final String connectId;
     private final EsSetupInfo esSetupInfo;
     private final EsService esService;
 
     public EsDriver(String connectId) {
-        this.connectId = connectId;
         this.esSetupInfo = JsonUtils.toObject(ConnectIdUtils.decodeConnectId(connectId) , EsSetupInfo.class);
+        this.esSetupInfo.setPwd(rebuildPassword(esSetupInfo.getPwd()));
         this.esService = new OpenEsService(esSetupInfo, this);
     }
 

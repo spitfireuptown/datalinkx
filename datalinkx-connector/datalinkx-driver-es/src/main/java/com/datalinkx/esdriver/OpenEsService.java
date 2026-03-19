@@ -91,7 +91,7 @@ public class OpenEsService implements EsService {
         try {
             getVersion(client);
         } catch (Exception e) {
-            throw new Exception("集群连接不通，请检查配置");
+            throw new Exception("集群连接不通，请检查配置", e);
         }
 
         return client;
@@ -118,7 +118,7 @@ public class OpenEsService implements EsService {
         } catch (ResponseException e) {
             throw new Exception(getErrorInfo(EntityUtils.toString(e.getResponse().getEntity())));
         } catch (IOException e) {
-            log.error("", e);
+            log.error("ES Exception", e);
             throw e;
         }
     }
@@ -168,7 +168,7 @@ public class OpenEsService implements EsService {
         } catch (ResponseException e) {
             throw new Exception(getErrorInfo(EntityUtils.toString(e.getResponse().getEntity())));
         } catch (IOException e) {
-            log.error("", e);
+            log.error("ES Exception", e);
             throw e;
         }
     }
@@ -179,7 +179,7 @@ public class OpenEsService implements EsService {
             String rawBody = EntityUtils.toString(response.getEntity());
             return Integer.parseInt(JsonUtils.toJsonNode(rawBody).get("version").get("number").asText().split("\\.")[0]);
         } catch (IOException e) {
-            log.error("", e);
+            log.error("ES Exception", e);
             String message = e.getMessage();
             if (e.getMessage() != null && e.getMessage().contains("unable to authenticate user")) {
                 message = "用户认证失败";
@@ -235,7 +235,7 @@ public class OpenEsService implements EsService {
         } catch (ResponseException e) {
             throw new Exception(getErrorInfo(EntityUtils.toString(e.getResponse().getEntity())));
         } catch (IOException e) {
-            log.error("", e);
+            log.error("ES Exception", e);
             throw e;
         }
     }

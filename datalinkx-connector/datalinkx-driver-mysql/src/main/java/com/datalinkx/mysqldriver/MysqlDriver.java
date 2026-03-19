@@ -53,7 +53,7 @@ public class MysqlDriver extends JdbcDriver<MysqlSetupInfo, JdbcReader, JdbcWrit
     }
     @Override
     public String wrapValue(String fieldType, String value) {
-        if (DATE_TYPE_SET.contains(fieldType)) {
+        if (DATE_TYPE_SET.contains(fieldType.toLowerCase())) {
 
             return valueQuota() + value + valueQuota();
         } else {
