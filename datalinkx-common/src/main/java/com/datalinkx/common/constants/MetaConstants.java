@@ -85,7 +85,8 @@ public final class MetaConstants {
         public static final String SQL_OUTPUT_TABLE = "sql_output";
         public static final String TRANSFORM_SQL = "sql";
         public static final String TRANSFORM_LLM = "llm";
-
+        public static final String TRANSFORM_START = "custom-start-node";
+        public static final String TRANSFORM_END = "custom-end-node";
         public static final String KEY_RESTORE_COLUMN_INDEX = "restoreColumnIndex";
         public static final String KEY_KAFKA_READ_INDEX = "kafkaReadMode";
         public static final String KEY_CHECKPOINT_INTERVAL = "checkpoint_interval";

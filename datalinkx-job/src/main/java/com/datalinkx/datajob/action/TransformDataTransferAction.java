@@ -3,6 +3,7 @@ package com.datalinkx.datajob.action;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
+import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
 
 import com.datalinkx.compute.connector.jdbc.TransformNode;
@@ -83,7 +84,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
                 .map(node -> (Object) node) // 使用 map 将 TransformNode 转换为 Object
                 .collect(Collectors.toList()));
         computeJobGraph.setSink(Collections.singletonList(unit.getSinkInfo()));
-        log.info("job_graph ==> {}", computeJobGraph);
+        log.info("job_graph ==> {}", JsonUtils.toJson(computeJobGraph));
         JobCommitResp jobCommitResp = seaTunnelClient.jobSubmit(computeJobGraph);
         String taskId = jobCommitResp.getJobId();
         unit.setTaskId(taskId);
