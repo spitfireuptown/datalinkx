@@ -6,8 +6,6 @@ import com.datalinkx.common.exception.DatalinkXServerException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.result.StatusCode;
 import com.datalinkx.common.utils.JsonUtils;
-import com.datalinkx.compute.transform.ITransformDriver;
-import com.datalinkx.compute.transform.ITransformFactory;
 import com.datalinkx.dataserver.bean.domain.DsBean;
 import com.datalinkx.dataserver.bean.domain.JobBean;
 import com.datalinkx.dataserver.bean.domain.JobLogBean;
@@ -26,6 +24,8 @@ import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
 import com.datalinkx.driver.dsdriver.IDsWriter;
 import com.datalinkx.driver.dsdriver.base.meta.DbTableField;
+import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
+import com.datalinkx.driver.dsdriver.transformdriver.ITransformFactory;
 import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
 import com.datalinkx.messagehub.service.MessageHubService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -238,6 +238,10 @@ public class DtsJobServiceImpl implements DtsJobService {
         for (JsonNode node : jsonNode.get("cells")) {
 
             String transformType = node.get("shape").asText();
+            if (MetaConstants.CommonConstant.TRANSFORM_START.equals(transformType)
+                    || MetaConstants.CommonConstant.TRANSFORM_END.equals(transformType)) {
+                continue;
+            }
             if (MetaConstants.CommonConstant.TRANSFORM_SQL.equals(transformType)) {
                 containSQLNode = true;
             }
@@ -262,9 +266,9 @@ public class DtsJobServiceImpl implements DtsJobService {
         compute.setTransforms(transforms);
 
         // 如果计算过程中存在SQL节点，把reader中的queryFields改成*防止SQL中引用了未映射字段导致报错
-//        if (containSQLNode) {
-//            syncUnit.getReader().setQueryFields("*");
-//        }
+        if (containSQLNode) {
+            syncUnit.getReader().setQueryFields("*");
+        }
 
         syncUnit.setCommonSettings(new HashMap<String, Object>() {{
             put("openai.api_path", commonProperties.getOllamaUrl() + "/api/chat");

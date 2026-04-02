@@ -295,6 +295,9 @@
               this.$message.error(result.errstr)
             }
           })
+          .catch(err => {
+            this.$message.error('请求失败：' + (err.message || '未知错误'))
+          })
       },
       handleSubmit () {
         const httpConfig = {
@@ -342,7 +345,7 @@
               }
             }).catch(err => {
               this.confirmLoading = false
-              this.$message.error(err.errstr)
+              this.$message.error('保存失败：' + (err.errstr || err.message || '未知错误'))
           })
         } else {
           putObj(formData).then(res => {
@@ -358,7 +361,7 @@
             }
           }).catch(err => {
             this.confirmLoading = false
-            this.$message.error(err.errstr)
+            this.$message.error('修改失败：' + (err.errstr || err.message || '未知错误'))
           })
         }
         this.selectloading = false
@@ -556,6 +559,9 @@
             this.json_path = dsConfig.json_path
             this.rev_data = JSON.parse(dsConfig.rev_data)
             this.ds_name = record.name
+          })
+          .catch(err => {
+            this.$message.error('获取数据源信息失败：' + (err.errstr || err.message || '未知错误'))
           })
 
           this.confirmLoading = false

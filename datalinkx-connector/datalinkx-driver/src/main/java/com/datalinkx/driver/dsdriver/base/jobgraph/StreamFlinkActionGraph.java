@@ -1,4 +1,4 @@
-package com.datalinkx.driver.dsdriver.base.meta;
+package com.datalinkx.driver.dsdriver.base.jobgraph;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.Map;
 @SuperBuilder
 @FieldNameConstants
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StreamFlinkActionMeta extends EngineActionMeta {
+public class StreamFlinkActionGraph extends BaseEngineActionGraph {
     String readerDsInfo;
     String writerDsInfo;
     String checkpointPath;

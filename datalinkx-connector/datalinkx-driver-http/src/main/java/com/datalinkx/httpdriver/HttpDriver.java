@@ -6,13 +6,14 @@ import com.datalinkx.common.utils.ConnectIdUtils;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.common.utils.TelnetUtil;
-import com.datalinkx.compute.connector.http.HttpSource;
-import com.datalinkx.compute.connector.jdbc.TransformNode;
 import com.datalinkx.driver.dsdriver.IDsReader;
+import com.datalinkx.driver.dsdriver.IDsWriter;
 import com.datalinkx.driver.dsdriver.base.AbstractDriver;
 import com.datalinkx.driver.dsdriver.base.meta.DbTableField;
+import com.datalinkx.driver.dsdriver.base.reader.AbstractReader;
 import com.datalinkx.driver.dsdriver.base.writer.AbstractWriter;
 import com.datalinkx.driver.dsdriver.setupinfo.HttpSetupInfo;
+import com.datalinkx.driver.dsdriver.transformdriver.TransformNode;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.*;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  * @author: uptown
  * @date: 2024/12/17 22:38
  */
-public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, AbstractWriter> implements IDsReader {
+public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, HttpWriter> implements IDsReader, IDsWriter {
 
     private final String connectId;
     private final HttpSetupInfo httpSetupInfo;
@@ -48,6 +49,11 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, Abstra
 
     @Override
     public Object getReaderInfo(DatalinkXJobDetail.Reader reader) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Object getWriterInfo(DatalinkXJobDetail.Writer writer) throws Exception {
         return null;
     }
 
@@ -82,7 +88,7 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, Abstra
     }
 
     @Override
-    public TransformNode getSourceInfo(DatalinkXJobDetail.Reader reader) throws Exception {
+    public HttpReader getSourceInfo(DatalinkXJobDetail.Reader reader) throws Exception {
         Map<String, Object> paramMap = new HashMap<>();
         Map<String, Object> headerMap = new HashMap<>();
         Map<String, Object> bodyMap = new HashMap<>();
@@ -106,7 +112,7 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, Abstra
                 .collect(Collectors.toList());
 
         // 接口字段配置
-        HttpSource.Schema schema = new HttpSource.Schema();
+        HttpReader.Schema schema = new HttpReader.Schema();
         // 为什么用LinkedHashMap？ 因为要保证写入顺序与页面上配置的字段映射顺序一致
         LinkedHashMap<String, String> fields = new LinkedHashMap<>();
         for (String column : reader.getColumns()) {
@@ -138,17 +144,35 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, Abstra
         }
 
 
-        return HttpSource.builder()
+        return HttpReader.builder()
+                .engine(MetaConstants.CommonConstant.SEATUNNEL_ENGINE)
                 .url(baseUrl)
                 .method(this.httpSetupInfo.getMethod())
-//                .contentField(this.httpSetupInfo.getJsonPath())
                 .jsonField(jsonField)
-                .params(bodyMap)
+                .params(paramMap)
                 .headers(headerMap)
                 .body(this.httpSetupInfo.getRaw())
                 .schema(schema)
                 .pluginName(PLUGIN_NAME)
                 .resultTableName(MetaConstants.CommonConstant.SOURCE_TABLE)
+                .build();
+    }
+
+    @Override
+    public void truncateData(DatalinkXJobDetail.Writer writer) throws Exception {
+
+    }
+
+    @Override
+    public HttpWriter getSinkInfo(DatalinkXJobDetail.Writer writer) {
+        Map<String, Object> headerMap = new HashMap<>();
+        this.httpSetupInfo.getHeader().forEach(item -> headerMap.put(item.getKey(), item.getValue()));
+        return HttpWriter
+                .builder()
+                .engine(MetaConstants.CommonConstant.SEATUNNEL_ENGINE)
+                .url(this.httpSetupInfo.getUrl())
+                .headers(headerMap)
+                .pluginName(PLUGIN_NAME)
                 .build();
     }
 }

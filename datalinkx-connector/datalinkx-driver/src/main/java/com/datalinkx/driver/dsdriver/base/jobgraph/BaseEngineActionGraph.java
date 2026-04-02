@@ -1,4 +1,4 @@
-package com.datalinkx.driver.dsdriver.base.meta;
+package com.datalinkx.driver.dsdriver.base.jobgraph;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldNameConstants
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EngineActionMeta {
+public class BaseEngineActionGraph {
     // 流转任务id
     public String jobId;
     // 底层引擎侧任务id

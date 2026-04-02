@@ -9,9 +9,6 @@ import com.datalinkx.common.utils.ConnectIdUtils;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.common.utils.TelnetUtil;
-import com.datalinkx.compute.connector.jdbc.JdbcSink;
-import com.datalinkx.compute.connector.jdbc.JdbcSource;
-import com.datalinkx.compute.connector.jdbc.TransformNode;
 import com.datalinkx.driver.dsdriver.IDsDriver;
 import com.datalinkx.driver.dsdriver.IDsReader;
 import com.datalinkx.driver.dsdriver.IDsWriter;
@@ -340,9 +337,10 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
     }
 
     @Override
-    public TransformNode getSourceInfo(DatalinkXJobDetail.Reader reader) {
+    public JdbcReader getSourceInfo(DatalinkXJobDetail.Reader reader) {
 
-        return JdbcSource.builder()
+        return JdbcReader.builder()
+                .engine(MetaConstants.CommonConstant.SEATUNNEL_ENGINE)
                 .url(this.jdbcUrl())
                 .driver(this.driverClass())
                 .user(this.jdbcSetupInfo.getUid())
@@ -372,10 +370,9 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
     }
 
     @Override
-    public TransformNode getSinkInfo(DatalinkXJobDetail.Writer writer) {
-
-
-        return JdbcSink.builder()
+    public JdbcWriter getSinkInfo(DatalinkXJobDetail.Writer writer) {
+        return JdbcWriter.builder()
+                .engine(MetaConstants.CommonConstant.SEATUNNEL_ENGINE)
                 .url(this.jdbcUrl())
                 .driver(this.driverClass())
                 .user(this.jdbcSetupInfo.getUid())

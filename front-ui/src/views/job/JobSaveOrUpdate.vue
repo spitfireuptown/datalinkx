@@ -1,170 +1,196 @@
 <template>
   <a-modal
-    title="新增数据流转任务"
-    :width="640"
+    :title="type === 'edit' ? '编辑数据流转任务' : '新增数据流转任务'"
+    :width="800"
     :visible="visible"
     :maskClosable="false"
     @cancel="handleCancel"
     class="job-save-root"
   >
-    <a-form :form="form" @submit="handleSubmit" style="max-width: 600px">
-      <a-form-item
-        v-show="false"
-        label="job_id"
-      >
-        <a-input
-          v-decorator="['dsId']"
-        />
-      </a-form-item>
-      <a-form-item
-        label="任务名称"
-      >
-        <a-input
-          type="text"
-          v-decorator="['jobName', {rules: [{required: true, message: '请输入任务名称'}],initialValue: jobName}]"
-        />
-      </a-form-item>
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="来源数据源">
-            <a-select
-              @change="handleFromChange"
-              v-decorator="['selectedDataSource', {rules: [{required: true, message: '请选择来源数据源'}],initialValue: selectedDataSource}]">
-              <a-select-option v-for="table in fromDsList" :value="table.dsId" :key="table.name">
-                <div>
-                  <span class="ds-icon">
-                    <img :src="dsImgObj[table.type]" alt="">
-                  </span>
-                  <span>{{ table.name }}</span>
-                </div>
-              </a-select-option>
-            </a-select>
+    <a-form :form="form" @submit="handleSubmit" layout="vertical">
+      <!-- 基本信息 -->
+      <a-divider orientation="left">基本信息</a-divider>
+      <a-row :gutter="24">
+        <a-col :span="24">
+          <a-form-item label="任务名称">
+            <a-input
+              placeholder="请输入任务名称"
+              v-decorator="['jobName', {rules: [{required: true, message: '请输入任务名称'}],initialValue: jobName}]"
+            />
           </a-form-item>
         </a-col>
-        <a-col :span="12">
-          <a-form-item label="目标数据源">
-            <a-select
-              @change="handleToDsChange"
-              v-decorator="['selectedTargetSource', {rules: [{required: true, message: '请选择目标数据源'}],initialValue: selectedTargetSource}]">
-              <a-select-option v-for="table in toDsList" :value="table.dsId" :key="table.name">
-                <div>
-                  <span class="ds-icon">
-                    <img :src="dsImgObj[table.type]" alt="">
-                  </span>
-                  <span>{{ table.name }}</span>
-                </div>
-              </a-select-option>
-            </a-select>
+        <a-col :span="24" v-show="!isStreaming">
+          <a-form-item>
+            <span slot="label">
+              定时配置 (Spring crontab)
+              <a-tooltip title="点击查看 crontab 工具">
+                <a href="https://tool.lu/crontab" target="_blank" style="margin-left: 8px">
+                  <a-icon type="question-circle-o" />
+                </a>
+              </a-tooltip>
+            </span>
+            <a-input
+              placeholder="例如: 0 0/5 * * * ?"
+              v-decorator="['schedulerConf', {rules: [{required: false, message: '请输入crontab表达式', trigger: 'blur'}],initialValue: schedulerConf}]"/>
           </a-form-item>
         </a-col>
       </a-row>
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-form-item label="来源数据源表">
-            <a-select @change="handleFromTbChange" v-decorator="['selectedSourceTable', {rules: [{required: true, message: '请选择来源数据源表'}],initialValue: selectedSourceTable}]">
+
+      <!-- 数据源配置 -->
+      <a-divider orientation="left">数据源配置</a-divider>
+      <div class="ds-guide-wrapper">
+        <div class="ds-guide-panel source-panel">
+          <div class="panel-header">
+            <a-icon type="database" /> 来源端 (From)
+          </div>
+          <a-form-item label="数据源" class="guide-item">
+            <a-select
+              placeholder="请选择来源数据源"
+              @change="handleFromChange"
+              v-decorator="['selectedDataSource', {rules: [{required: true, message: '请选择来源数据源'}],initialValue: selectedDataSource}]">
+              <a-select-option v-for="table in fromDsList" :value="table.dsId" :key="table.name">
+                <div class="ds-option">
+                  <span class="ds-icon">
+                    <img :src="dsImgObj[table.type]" alt="">
+                  </span>
+                  <span>{{ table.name }}</span>
+                </div>
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+          <a-form-item label="数据表" class="guide-item">
+            <a-select
+              show-search
+              placeholder="请选择来源表"
+              @change="handleFromTbChange"
+              v-decorator="['selectedSourceTable', {rules: [{required: true, message: '请选择来源数据源表'}],initialValue: selectedSourceTable}]">
               <a-select-option v-for="table in sourceTables" :value="table" :key="table">
                 {{ table }}
               </a-select-option>
             </a-select>
           </a-form-item>
-        </a-col>
-        <a-col :span="12" v-show="!isRedisTo">
-          <a-form-item label="目标数据源表">
-            <a-select @change="handleToTbChange" v-decorator="['selectedTargetTable', {rules: [{required: true, message: '请选择目标数据源表'}],initialValue: selectedTargetTable}]">
+        </div>
+
+        <div class="ds-guide-connector">
+          <div class="connector-arrow">
+            <a-icon type="double-right" />
+          </div>
+        </div>
+
+        <div class="ds-guide-panel target-panel">
+          <div class="panel-header">
+            <a-icon type="cloud-upload" /> 目标端 (To)
+          </div>
+          <a-form-item label="数据源" class="guide-item">
+            <a-select
+              placeholder="请选择目标数据源"
+              @change="handleToDsChange"
+              v-decorator="['selectedTargetSource', {rules: [{required: true, message: '请选择目标数据源'}],initialValue: selectedTargetSource}]">
+              <a-select-option v-for="table in toDsList" :value="table.dsId" :key="table.name">
+                <div class="ds-option">
+                  <span class="ds-icon">
+                    <img :src="dsImgObj[table.type]" alt="">
+                  </span>
+                  <span>{{ table.name }}</span>
+                </div>
+              </a-select-option>
+            </a-select>
+          </a-form-item>
+          <a-form-item v-if="!isRedisTo" label="数据表" class="guide-item">
+            <a-select
+              show-search
+              placeholder="请选择目标表"
+              @change="handleToTbChange"
+              v-decorator="['selectedTargetTable', {rules: [{required: true, message: '请选择目标数据源表'}],initialValue: selectedTargetTable}]">
               <a-select-option v-for="table in targetTables" :value="table" :key="table">
                 {{ table }}
               </a-select-option>
             </a-select>
           </a-form-item>
-        </a-col>
-        <a-col :span="12" v-show="isRedisTo" class="job-save-col">
-          <div class="redis-type-val">
-            <a-form-item ref="redis_type" label="type:" :required="true">
-              <a-select v-model="redisToType" @change="changeToRedisType;validate_redis" :validateStatus="redis_type_validateStatus" :help="redis_type_help">
+          <div v-else class="redis-config-row">
+            <a-form-item label="Redis Type" :required="true" :validateStatus="redis_type_validateStatus" :help="redis_type_help" class="redis-type-item guide-item">
+              <a-select v-model="redisToType" @change="changeToRedisType;validate_redis">
                 <a-select-option v-for="item in RedisTypes" :value="item.value" :key="item.value">
                   {{ item.label }}
                 </a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item ref="redis_value" label="key:" :required="true" :validateStatus="redis_value_validateStatus" :help="redis_value_help">
+            <a-form-item label="Redis Key" :required="true" :validateStatus="redis_value_validateStatus" :help="redis_value_help" class="redis-key-item guide-item">
               <a-input
+                placeholder="请输入 Redis Key"
                 @blur="validate_redis"
-                type="text"
                 v-model="redisToValue"/>
             </a-form-item>
           </div>
-        </a-col>
-      </a-row>
-      <a-form-item
-        label="同步配置"
-        v-show="!isRedisTo && !isStreaming"
-      >
-        <a-row :gutter="16">
-          <a-col :span="6">
-            <a-radio-group v-model="syncMode" button-style="solid" @change="changeSyncConfig">
-              <a-radio-button value="overwrite">
-                全量
-              </a-radio-button>
-              <a-radio-button value="increment">
-                增量
-              </a-radio-button>
+        </div>
+      </div>
+
+      <!-- 同步策略 -->
+      <a-divider orientation="left" v-show="!isRedisTo && !isStreaming">同步策略</a-divider>
+      <div class="sync-strategy-box" v-show="!isRedisTo && !isStreaming">
+        <a-row :gutter="24" type="flex" align="middle">
+          <a-col :span="8">
+            <span class="sync-label">同步模式:</span>
+            <a-radio-group v-model="syncMode" button-style="solid" @change="changeSyncConfig" size="small">
+              <a-radio-button value="overwrite">全量</a-radio-button>
+              <a-radio-button value="increment">增量</a-radio-button>
             </a-radio-group>
           </a-col>
-          <a-col :span="6" v-show="!isIncrement">开启数据覆盖: <a-switch v-model="trans_cover" @change="changeCover" /></a-col>
-          <a-col :span="6"><p v-show="isIncrement">请选择增量字段: </p></a-col>
-          <a-col :span="12">
-            <a-select v-show="isIncrement" v-model="incrementField" placeholder="请选择增量字段">
+          <a-col :span="16">
+            <div v-if="!isIncrement" class="sync-detail-item">
+              <span class="sync-label">开启数据覆盖:</span>
+              <a-switch v-model="trans_cover" @change="changeCover" />
+            </div>
+            <div v-else class="sync-detail-item">
+              <span class="sync-label">增量字段:</span>
+              <a-select v-model="incrementField" placeholder="请选择增量字段" style="width: 200px" size="small">
+                <a-select-option v-for="field in sourceFields" :value="field.name" :key="field.name">
+                  {{ field.name }}
+                </a-select-option>
+              </a-select>
+            </div>
+          </a-col>
+        </a-row>
+      </div>
+
+      <!-- 字段映射关系 -->
+      <a-divider orientation="left">字段映射关系</a-divider>
+      <div class="mapping-container">
+        <div class="mapping-header">
+          <div class="header-item">来源字段</div>
+          <div class="header-icon"></div>
+          <div class="header-item">目标字段</div>
+          <div class="header-action">操作</div>
+        </div>
+        <div v-for="(mapping, index) in mappings" :key="index" class="mapping-row">
+          <div class="mapping-field">
+            <a-select v-model="mapping.sourceField" placeholder="来源字段" show-search style="width: 100%">
               <a-select-option v-for="field in sourceFields" :value="field.name" :key="field.name">
                 {{ field.name }}
               </a-select-option>
             </a-select>
-          </a-col>
-        </a-row>
-      </a-form-item>
-      <a-form-item
-        v-show="!isStreaming"
-      >
-        <a href="https://tool.lu/crontab" target="_blank">定时配置（Spring crontab表达式）</a>
-        <a-input
-          type="text"
-          v-decorator="['schedulerConf', {rules: [{required: false, message: '请输入crontab表达式', trigger: 'blur'}],initialValue: schedulerConf}]"/>
-      </a-form-item>
-      <a-form-item label="字段映射关系">
-        <a-row :gutter="16">
-          <a-col :span="8">
-            <span>来源字段</span>
-          </a-col>
-          <a-col :span="8">
-            <span>目标字段</span>
-          </a-col>
-        </a-row>
-        <a-row :gutter="16" v-for="(mapping, index) in mappings" :key="index">
-          <a-col :span="8">
-            <a-select v-model="mapping.sourceField" placeholder="请选择来源字段">
-              <a-select-option v-for="field in sourceFields" :value="field.name" :key="field.name">
-                {{ field.name }}
-              </a-select-option>
-            </a-select>
-          </a-col>
-          <a-col :span="8">
-            <a-select v-model="mapping.targetField" placeholder="请选择目标字段">
+          </div>
+          <div class="mapping-arrow">
+            <a-icon type="swap-right" />
+          </div>
+          <div class="mapping-field">
+            <a-select v-model="mapping.targetField" placeholder="目标字段" show-search style="width: 100%">
               <a-select-option v-for="field in targetFields" :value="field.name" :key="field.name">
                 {{ field.name }}
               </a-select-option>
             </a-select>
-          </a-col>
-          <a-col :span="4">
-            <a-icon type="minus-circle-o" @click="removeMapping(index)" v-show="mappings.length > 1" />
-          </a-col>
-        </a-row>
-        <a-row :gutter="16">
-          <a-col :span="24">
-            <a-button type="dashed" @click="addMapping" style="width: 100%">
-              <a-icon type="plus" /> 添加字段映射关系
+          </div>
+          <div class="mapping-action">
+            <a-button type="link" @click="removeMapping(index)" v-show="mappings.length > 1" class="delete-btn">
+              <a-icon type="delete" />
             </a-button>
-          </a-col>
-        </a-row>
-      </a-form-item>
+          </div>
+        </div>
+        <a-button type="dashed" block icon="plus" @click="addMapping" class="add-mapping-btn">
+          添加字段映射关系
+        </a-button>
+      </div>
+
       <LoadingDx size="'size-1x'" v-if="selectloading"></LoadingDx>
     </a-form>
 
@@ -519,30 +545,250 @@
 
 <style scoped lang="less">
   .job-save-root {
-    .job-save-col {
-      .redis-type-val {
-        display: flex;
-        :nth-child(2)
-        {
-          flex-grow: 1;
+    /deep/ .ant-modal-body {
+      padding: 16px 24px 24px;
+      background-color: #fbfbfb;
+    }
+
+    /deep/ .ant-form-item {
+      margin-bottom: 12px;
+      .ant-form-item-label {
+        line-height: 24px;
+        padding-bottom: 4px;
+        label {
+          color: #595959;
+          font-weight: 500;
         }
+      }
+    }
+
+    /deep/ .ant-divider-horizontal.ant-divider-with-text-left {
+      margin: 24px 0 16px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #262626;
+      border-top-color: #f0f0f0;
+      &::before {
+        border-top-color: #f0f0f0;
+      }
+      &::after {
+        border-top-color: #f0f0f0;
       }
     }
   }
 
-  ::v-deep .ds-icon {
-    float: left;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-right: 4px;
-    img {
-      width: 24px;
-      height: 24px;
-      margin: 0;
-      padding: 0;
-      border: 0;
+  .ds-option {
+    display: flex;
+    align-items: center;
+    padding: 2px 0;
+    .ds-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+  }
+
+  .ds-guide-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 24px;
+    background: #fdfdfd;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+
+    .ds-guide-panel {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      padding: 16px;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: #91d5ff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .panel-header {
+        font-size: 13px;
+        font-weight: 600;
+        color: #595959;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f5f5f5;
+        
+        .anticon {
+          font-size: 16px;
+          color: #1890ff;
+        }
+      }
+
+      .guide-item {
+        margin-bottom: 8px !important;
+        &:last-child {
+          margin-bottom: 0 !important;
+        }
+      }
+    }
+
+    .source-panel {
+      border-left: 4px solid #1890ff;
+    }
+
+    .target-panel {
+      border-left: 4px solid #52c41a;
+    }
+
+    .ds-guide-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+
+      .connector-arrow {
+        color: #d9d9d9;
+        font-size: 20px;
+        animation: slideRight 2s infinite;
+      }
+    }
+  }
+
+  @keyframes slideRight {
+    0% { transform: translateX(-4px); opacity: 0.3; }
+    50% { transform: translateX(4px); opacity: 1; }
+    100% { transform: translateX(-4px); opacity: 0.3; }
+  }
+
+  .redis-config-row {
+    display: flex;
+    gap: 12px;
+    .redis-type-item {
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .redis-key-item {
+      flex: 1;
+    }
+  }
+
+  .sync-strategy-box {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+
+    .sync-label {
+      font-size: 13px;
+      color: #8c8c8c;
+      margin-right: 12px;
+    }
+
+    .sync-detail-item {
+      display: flex;
+      align-items: center;
+      height: 32px;
+    }
+  }
+
+  .mapping-container {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    padding: 12px;
+
+    .mapping-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 12px;
+      font-size: 12px;
+      color: #bfbfbf;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      .header-item {
+        flex: 1;
+      }
+      .header-icon {
+        width: 48px;
+      }
+      .header-action {
+        width: 32px;
+        text-align: center;
+      }
+    }
+
+    .mapping-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      background: #fdfdfd;
+      border: 1px solid #f0f0f0;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      &:hover {
+        border-color: #d1e9ff;
+        background: #f0f7ff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      }
+
+      .mapping-field {
+        flex: 1;
+      }
+
+      .mapping-arrow {
+        width: 48px;
+        display: flex;
+        justify-content: center;
+        color: #d9d9d9;
+        font-size: 16px;
+      }
+
+      .mapping-action {
+        width: 32px;
+        display: flex;
+        justify-content: center;
+        .delete-btn {
+          color: #ffccc7;
+          font-size: 14px;
+          transition: color 0.3s;
+          &:hover {
+            color: #ff4d4f;
+          }
+        }
+      }
+    }
+
+    .add-mapping-btn {
+      margin-top: 12px;
+      height: 36px;
+      color: #8c8c8c;
+      border-color: #d9d9d9;
+      font-size: 13px;
+      &:hover {
+        color: #40a9ff;
+        border-color: #40a9ff;
+      }
     }
   }
 </style>

@@ -1,4 +1,4 @@
-package com.datalinkx.driver.dsdriver.base.meta;
+package com.datalinkx.driver.dsdriver.base.jobgraph;
 
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @FieldNameConstants
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FlinkActionMeta extends EngineActionMeta {
+public class FlinkActionGraph extends BaseEngineActionGraph {
     // datalinkx-server业务来源库信息
     public DatalinkXJobDetail.Reader reader;
     // datalinkx-server业务目标库信息

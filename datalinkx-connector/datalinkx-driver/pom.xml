@@ -19,10 +19,10 @@
             <version>1.0.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.datalinkx</groupId>
-            <artifactId>datalinkx-transform</artifactId>
-            <version>1.0.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.datalinkx</groupId>-->
+<!--            <artifactId>datalinkx-transform</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--        </dependency>-->
     </dependencies>
 </project>

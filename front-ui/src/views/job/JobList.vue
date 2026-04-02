@@ -64,6 +64,8 @@ export default {
   data () {
     return {
       loading: false,
+      refreshTimer: null,
+      eventSource: null,
       columns: [
         {
           title: 'job_id',
@@ -197,7 +199,9 @@ export default {
       this.$refs.JobSaveOrUpdate.edit(record.job_id, 'show')
     },
     execJob (record) {
-      this.eventSource.close()
+      if (this.eventSource) {
+        this.eventSource.close()
+      }
       this.createEventSource()
       exec(record.job_id).then(res => {
         if (res.status === '0') {
@@ -259,12 +263,23 @@ export default {
     }
   },
   beforeDestroy () {
-    this.eventSource.close()
+    if (this.eventSource) {
+      this.eventSource.close()
+    }
     closeConnect('jobList')
+    // 清理定时刷新
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer)
+      this.refreshTimer = null
+    }
   },
   created () {
     this.init()
     this.createEventSource()
+    // 启动定时刷新，每10秒刷新一次任务列表
+    this.refreshTimer = setInterval(() => {
+      this.init()
+    }, 15000)
   }
 }
 </script>

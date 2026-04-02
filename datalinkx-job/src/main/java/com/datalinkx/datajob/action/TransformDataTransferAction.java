@@ -3,16 +3,18 @@ package com.datalinkx.datajob.action;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
+import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
 
-import com.datalinkx.compute.connector.jdbc.TransformNode;
-import com.datalinkx.compute.transform.ITransformDriver;
-import com.datalinkx.compute.transform.ITransformFactory;
+import com.datalinkx.driver.dsdriver.base.writer.AbstractWriter;
+import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
+import com.datalinkx.driver.dsdriver.transformdriver.ITransformFactory;
+import com.datalinkx.driver.dsdriver.transformdriver.TransformNode;
 import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
 import com.datalinkx.driver.dsdriver.IDsWriter;
-import com.datalinkx.driver.dsdriver.base.meta.SeatunnelActionMeta;
+import com.datalinkx.driver.dsdriver.base.jobgraph.SeatunnelActionGraph;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobSyncModeForm;
@@ -27,12 +29,13 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.datalinkx.common.constants.MetaConstants.CommonConstant.SOURCE_TABLE;
 import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_SUCCESS;
 
 
 @Slf4j
 @Component
-public class TransformDataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, SeatunnelActionMeta> {
+public class TransformDataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, SeatunnelActionGraph> {
 
     @Autowired
     SeaTunnelClient seaTunnelClient;
@@ -49,7 +52,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected void end(SeatunnelActionMeta unit, int status, String errmsg) {
+    protected void end(SeatunnelActionGraph unit, int status, String errmsg) {
         log.info(String.format("transform job jobid: %s, end to transfer", unit.getJobId()));
         datalinkXServerClient.updateJobStatus(JobStateForm.builder().jobId(unit.getJobId())
                 .jobStatus(status).endTime(new Date().getTime())
@@ -63,7 +66,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected void beforeExec(SeatunnelActionMeta unit) throws Exception {
+    protected void beforeExec(SeatunnelActionGraph unit) throws Exception {
         IDsWriter writeDsDriver = DsDriverFactory.getDsWriter(unit.getWriter().getConnectId());
         // 是否覆盖数据
         if (unit.getCover() == 1) {
@@ -72,7 +75,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected void execute(SeatunnelActionMeta unit) throws Exception {
+    protected void execute(SeatunnelActionGraph unit) throws Exception {
         ComputeJobGraph computeJobGraph = new ComputeJobGraph();
         computeJobGraph.setJobId(unit.getJobId());
         computeJobGraph.setEnv(new HashMap<String, Object>() {{
@@ -83,7 +86,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
                 .map(node -> (Object) node) // 使用 map 将 TransformNode 转换为 Object
                 .collect(Collectors.toList()));
         computeJobGraph.setSink(Collections.singletonList(unit.getSinkInfo()));
-        log.info("job_graph ==> {}", computeJobGraph);
+        log.info("job_graph ==> {}", JsonUtils.toJson(computeJobGraph));
         JobCommitResp jobCommitResp = seaTunnelClient.jobSubmit(computeJobGraph);
         String taskId = jobCommitResp.getJobId();
         unit.setTaskId(taskId);
@@ -92,7 +95,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected boolean checkResult(SeatunnelActionMeta unit) throws DatalinkXJobException {
+    protected boolean checkResult(SeatunnelActionGraph unit) throws DatalinkXJobException {
         String taskId = unit.getTaskId();
         if (ObjectUtils.isEmpty(taskId)) {
             throw new DatalinkXJobException("task id is empty.");
@@ -116,7 +119,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected void afterExec(SeatunnelActionMeta unit, boolean success) {
+    protected void afterExec(SeatunnelActionGraph unit, boolean success) {
         // 记录增量记录
         if (success) {
             datalinkXServerClient.updateSyncMode(
@@ -129,13 +132,13 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     }
 
     @Override
-    protected SeatunnelActionMeta convertExecUnit(DatalinkXJobDetail info) throws Exception {
+    protected SeatunnelActionGraph convertExecUnit(DatalinkXJobDetail info) throws Exception {
         IDsReader dsReader = DsDriverFactory.getDsReader(info.getSyncUnit().getReader().getConnectId());
         IDsWriter dsWriter = DsDriverFactory.getDsWriter(info.getSyncUnit().getWriter().getConnectId());
 
         Map<String, Object> commonSettings = info.getSyncUnit().getCommonSettings();
         List<TransformNode> transformNodes = new ArrayList<>();
-        String lastTransformNodeName = "";
+        String lastTransformNodeName = SOURCE_TABLE;
 
         for (DatalinkXJobDetail.Compute.Transform transform : info.getSyncUnit().getCompute().getTransforms()) {
             ITransformDriver computeDriver = ITransformFactory.getComputeDriver(transform.getType());
@@ -144,7 +147,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
             transformNodes.add(transformNode);
         }
 
-        SeatunnelActionMeta seatunnelActionMeta = SeatunnelActionMeta.builder()
+        SeatunnelActionGraph seatunnelActionMeta = SeatunnelActionGraph.builder()
                 .writer(info.getSyncUnit().getWriter())
                 .reader(info.getSyncUnit().getReader())
                 .transformInfo(transformNodes)
@@ -154,18 +157,18 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
                 .parallelism(1)
                 .build();
 
-        TransformNode sinkInfo = dsWriter.getSinkInfo(info.getSyncUnit().getWriter());
-        sinkInfo.setSourceTableName(lastTransformNodeName);
-
 
         seatunnelActionMeta.setSourceInfo(dsReader.getSourceInfo(info.getSyncUnit().getReader()));
+
+        AbstractWriter sinkInfo = dsWriter.getSinkInfo(info.getSyncUnit().getWriter());
+        sinkInfo.setSourceTableName(lastTransformNodeName);
         seatunnelActionMeta.setSinkInfo(sinkInfo);
 
         return seatunnelActionMeta;
     }
 
     @Override
-    protected void destroyed(SeatunnelActionMeta unit, int status, String errmsg) {
+    protected void destroyed(SeatunnelActionGraph unit, int status, String errmsg) {
         alarmProduceTransmitter.pushAlarmMessage(unit.getJobId(), status, errmsg);
     }
 }

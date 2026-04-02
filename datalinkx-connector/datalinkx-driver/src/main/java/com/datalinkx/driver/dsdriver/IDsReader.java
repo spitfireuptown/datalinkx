@@ -3,8 +3,9 @@ package com.datalinkx.driver.dsdriver;
 
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.utils.ObjectUtils;
-import com.datalinkx.compute.connector.jdbc.TransformNode;
 import com.datalinkx.driver.dsdriver.base.meta.DbTableField;
+import com.datalinkx.driver.dsdriver.base.reader.AbstractReader;
+import com.datalinkx.driver.dsdriver.transformdriver.TransformNode;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
@@ -78,7 +79,7 @@ public interface IDsReader extends IDsDriver {
 
     // ============= Seatunnel引擎
     // 构造seatunnel引擎读信息
-    default TransformNode getSourceInfo(DatalinkXJobDetail.Reader reader) throws Exception {
+    default AbstractReader getSourceInfo(DatalinkXJobDetail.Reader reader) throws Exception {
         return null;
     }
 

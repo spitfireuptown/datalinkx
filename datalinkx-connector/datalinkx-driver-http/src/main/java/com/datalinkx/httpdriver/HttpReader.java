@@ -3,6 +3,7 @@ package com.datalinkx.httpdriver;
 import com.datalinkx.driver.dsdriver.base.reader.AbstractReader;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -21,21 +23,18 @@ import java.util.Map;
 public class HttpReader extends AbstractReader {
     private String url;
     private String method;
+    @Builder.Default
     private String format = "json";
-    private Pageing timeout;
-    private Map<String, String> params;
-    private String contentField;
-    private Map<String, Map<String, String>> schema = new HashMap<String, Map<String, String>>() {{
-        put("fields", fields);
-    }};
-    private Map<String, String> fields = new HashMap<>();
+    private Map<String, Object> params;
+    private HttpReader.Schema schema;
+    @JsonProperty("json_field")
+    private Map<String, String> jsonField;
+    private Map<String, Object> headers;
+    private String body;
 
-    @JsonIgnoreProperties
     @Data
-    public static class Pageing {
-        @JsonProperty("total_page_size")
-        private Integer totalPageSize;
-        @JsonProperty("page_field")
-        private String pageField;
+    public static final class Schema {
+        // 为什么用LinkedHashMap？ 因为要保证写入顺序与页面上配置的字段映射顺序一致
+        private LinkedHashMap<String, String> fields;
     }
 }

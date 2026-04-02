@@ -8,7 +8,7 @@ import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.datajob.job.ExecutorStreamJobHandler;
 
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
-import com.datalinkx.driver.dsdriver.base.meta.StreamFlinkActionMeta;
+import com.datalinkx.driver.dsdriver.base.jobgraph.StreamFlinkActionGraph;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
 import com.datalinkx.rpc.client.flink.FlinkClient;
@@ -25,15 +25,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.datalinkx.common.constants.MessageHubConstants.GLOBAL_COMMON_GROUP;
-
 /**
  * @author: uptown
  * @date: 2024/4/27 14:23
  */
 @Slf4j
 @Component
-public class StreamDataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, StreamFlinkActionMeta> {
+public class StreamDataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, StreamFlinkActionGraph> {
     @Autowired
     FlinkClient flinkClient;
 
@@ -55,7 +53,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     }
 
     @Override
-    protected void end(StreamFlinkActionMeta unit, int status, String errmsg) {
+    protected void end(StreamFlinkActionGraph unit, int status, String errmsg) {
         log.info(String.format("stream job jobid: %s, end to transfer", unit.getJobId()));
         // 修改任务状态，存储checkpoint
         datalinkXServerClient.updateJobStatus(JobStateForm.builder().jobId(unit.getJobId())
@@ -66,11 +64,11 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     }
 
     @Override
-    protected void beforeExec(StreamFlinkActionMeta unit) throws Exception {
+    protected void beforeExec(StreamFlinkActionGraph unit) throws Exception {
     }
 
     @Override
-    protected void execute(StreamFlinkActionMeta unit) throws Exception {
+    protected void execute(StreamFlinkActionGraph unit) throws Exception {
         synchronized (this) {
             Map<String, Object> commonSettings = unit.getCommonSettings();
             commonSettings.put("savePointPath", unit.getCheckpointPath());
@@ -82,7 +80,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     }
 
     @Override
-    protected boolean checkResult(StreamFlinkActionMeta unit) {
+    protected boolean checkResult(StreamFlinkActionGraph unit) {
         String taskId = unit.getTaskId();
         FlinkJobStatus flinkJobStatus = JsonUtils.toObject(JsonUtils.toJson(flinkClient.jobStatus(taskId)), FlinkJobStatus.class);
         String state = flinkJobStatus.getState();
@@ -140,7 +138,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     }
 
     @Override
-    protected void afterExec(StreamFlinkActionMeta unit, boolean success) {
+    protected void afterExec(StreamFlinkActionGraph unit, boolean success) {
         // 任务未提交成功
         if (ObjectUtils.isEmpty(unit.getTaskId())) {
             return;
@@ -161,7 +159,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
 
     @SneakyThrows
     @Override
-    protected StreamFlinkActionMeta convertExecUnit(DatalinkXJobDetail info) {
+    protected StreamFlinkActionGraph convertExecUnit(DatalinkXJobDetail info) {
         Object readerDsInfo = DsDriverFactory.getStreamDriver(info.getSyncUnit().getReader().getConnectId()).getReaderInfo(info.getSyncUnit().getReader());
 
         // 实时任务的writer不一定是流式数据源
@@ -188,7 +186,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
             writerDsInfo = DsDriverFactory.getDsWriter(info.getSyncUnit().getWriter().getConnectId()).getWriterInfo(writer);
         }
 
-        return StreamFlinkActionMeta.builder()
+        return StreamFlinkActionGraph.builder()
                 .writerDsInfo(JsonUtils.toJson(writerDsInfo))
                 .readerDsInfo(JsonUtils.toJson(readerDsInfo))
                 .checkpointPath(info.getSyncUnit().getCheckpointPath())
@@ -199,7 +197,7 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     }
 
     @Override
-    protected void destroyed(StreamFlinkActionMeta unit, int status, String errmsg) {
+    protected void destroyed(StreamFlinkActionGraph unit, int status, String errmsg) {
         distributedLock.unlock(unit.getJobId(), unit.getLockId());
     }
 }

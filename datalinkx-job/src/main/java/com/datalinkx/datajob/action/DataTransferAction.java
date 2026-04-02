@@ -10,7 +10,7 @@ import com.datalinkx.datajob.job.ExecutorJobHandler;
 import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsWriter;
-import com.datalinkx.driver.dsdriver.base.meta.FlinkActionMeta;
+import com.datalinkx.driver.dsdriver.base.jobgraph.FlinkActionGraph;
 import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
 import com.datalinkx.messagehub.service.MessageHubService;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
@@ -34,7 +34,7 @@ import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_
 
 @Slf4j
 @Component
-public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, FlinkActionMeta> {
+public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobDetail, FlinkActionGraph> {
 
     @Autowired
     private ExecutorJobHandler executorJobHandler;
@@ -68,7 +68,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected void end(FlinkActionMeta unit, int status, String errmsg) {
+    protected void end(FlinkActionGraph unit, int status, String errmsg) {
         log.info(String.format("jobid: %s, end to transfer", unit.getJobId()));
 
         datalinkXServerClient.updateJobStatus(JobStateForm.builder().jobId(unit.getJobId())
@@ -85,7 +85,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected void beforeExec(FlinkActionMeta unit) throws Exception {
+    protected void beforeExec(FlinkActionGraph unit) throws Exception {
         log.info(String.format("jobid: %s, begin from %s to %s", unit.getJobId(), unit.getReader().getTableName(), unit.getWriter().getTableName()));
         // 是否覆盖数据
         if (unit.getCover() == 1) {
@@ -96,7 +96,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
 
 
     @Override
-    protected void execute(FlinkActionMeta unit) throws Exception {
+    protected void execute(FlinkActionGraph unit) throws Exception {
         log.info(String.format("jobid: %s, exec from %s#%s to %s#%s",
                 unit.getJobId(),
                 unit.getReader().getSchema(),
@@ -126,7 +126,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected boolean checkResult(FlinkActionMeta unitParam) throws DatalinkXJobException {
+    protected boolean checkResult(FlinkActionGraph unitParam) throws DatalinkXJobException {
         String taskId = unitParam.getTaskId();
         if (ObjectUtils.isEmpty(taskId)) {
             throw new DatalinkXJobException("task id is empty.");
@@ -157,7 +157,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
         return false;
     }
 
-    private void computeRecords(FlinkActionMeta unitParam) {
+    private void computeRecords(FlinkActionGraph unitParam) {
         AtomicInteger readRecords = new AtomicInteger(0);
         AtomicInteger writeRecords = new AtomicInteger(0);
         AtomicInteger errorRecords = new AtomicInteger(0);
@@ -200,7 +200,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected void afterExec(FlinkActionMeta unit, boolean success) {
+    protected void afterExec(FlinkActionGraph unit, boolean success) {
         // 记录增量记录
         datalinkXServerClient.updateSyncMode(
                 JobSyncModeForm.builder()
@@ -211,8 +211,8 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected FlinkActionMeta convertExecUnit(DatalinkXJobDetail jobDetail) {
-        return FlinkActionMeta.builder()
+    protected FlinkActionGraph convertExecUnit(DatalinkXJobDetail jobDetail) {
+        return FlinkActionGraph.builder()
                     .reader(jobDetail.getSyncUnit().getReader())
                     .writer(jobDetail.getSyncUnit().getWriter())
                     .jobId(jobDetail.getJobId())
@@ -221,7 +221,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
     }
 
     @Override
-    protected void destroyed(FlinkActionMeta unit, int status, String errmsg) {
+    protected void destroyed(FlinkActionGraph unit, int status, String errmsg) {
         alarmProduceTransmitter.pushAlarmMessage(unit.getJobId(), status, errmsg);
     }
 }

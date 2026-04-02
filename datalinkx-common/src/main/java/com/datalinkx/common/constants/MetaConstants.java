@@ -69,6 +69,7 @@ public final class MetaConstants {
             put(MetaConstants.JobStatus.JOB_STATUS_SYNCING, "任务同步中");
             put(MetaConstants.JobStatus.JOB_STATUS_CREATE, "任务新建");
             put(MetaConstants.JobStatus.JOB_STATUS_QUEUE, "任务排队");
+            put(MetaConstants.JobStatus.JOB_STATUS_STOPPING, "任务停止中");
         }};
     }
 
@@ -83,6 +84,8 @@ public final class MetaConstants {
         public static final String RESULT_TABLE = "result_table";
         public static final String LLM_OUTPUT_TABLE = "llm_output";
         public static final String SQL_OUTPUT_TABLE = "sql_output";
+        public static final String TRANSFORM_START = "custom-start-node";
+        public static final String TRANSFORM_END = "custom-end-node";
         public static final String TRANSFORM_SQL = "sql";
         public static final String TRANSFORM_LLM = "llm";
 
@@ -102,6 +105,8 @@ public final class MetaConstants {
         // 成功才推送
         public static final Integer ALARM_SUCCESS_STATUS = 2;
         public static final String GLOBAL_ALARM_SUBJECT = "DatalinkX Pro系统告警";
+        public static final String FLINKX_ENGINE = "flinkx";
+        public static final String SEATUNNEL_ENGINE = "seatunnel";
     }
 
     public static class CopilotConstant {

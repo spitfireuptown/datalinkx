@@ -64,6 +64,8 @@ export default {
       loading: false,
       currentJobId: '',
       showJobCompute: false,
+      refreshTimer: null,
+      eventSource: null,
       columns: [
         {
           title: 'job_id',
@@ -231,10 +233,23 @@ export default {
     }
   },
   beforeDestroy () {
-    this.eventSource.close()
+    if (this.eventSource) {
+      this.eventSource.close()
+    }
+    // 清理定时刷新
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer)
+      this.refreshTimer = null
+    }
   },
   created () {
     this.init()
+    // 启动定时刷新，每10秒刷新一次任务列表
+    console.log('启动定时刷新定时器')
+    this.refreshTimer = setInterval(() => {
+      console.log('执行定时刷新')
+      this.init()
+    }, 15000)
   }
 }
 </script>
