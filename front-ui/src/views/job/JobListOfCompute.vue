@@ -208,6 +208,9 @@ export default {
         } else {
           this.$message.error(res.errstr)
         }
+      }).catch(err => {
+        const errData = err.response?.data || {}
+        this.$message.error(errData.errstr || '操作失败')
       }).finally(() => {
         this.loading = false
       })

@@ -2,9 +2,7 @@ package com.datalinkx.esdriver;
 
 
 import com.datalinkx.driver.dsdriver.base.writer.AbstractWriter;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
@@ -23,5 +21,14 @@ public class EsWriter extends AbstractWriter {
     private Long bulkAction;
     private Long timeout;
     private List<Map<String, Object>> idColumn;
-    private List<String> column;
+    private List<EsColumn> column;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static final class EsColumn {
+        private String name;
+        private String type;
+    }
 }
