@@ -124,6 +124,24 @@ CREATE TABLE `ALARM_RULE` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='告警规则信息表';
 
 
+-- 站内信表
+CREATE TABLE `IN_SITE_MESSAGE` (
+    `id` int unsigned NOT NULL AUTO_INCREMENT,
+    `message_id` bigint DEFAULT NULL COMMENT '消息id',
+    `user_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户id',
+    `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '消息标题',
+    `content` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '消息内容',
+    `type` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT 'message' COMMENT '消息类型',
+    `avatar` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '头像',
+    `is_read` boolean DEFAULT FALSE COMMENT '是否已读',
+    `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `utime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_del` int DEFAULT '0' COMMENT '是否删除',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `message_id` (`message_id`) USING BTREE,
+    KEY `user_id` (`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='站内信表';
+
 -- 如果使用mysqlcdc，需要手动创建用户 用户名：canal 密码：Canal@123456
 create user 'canal'@'%' identified by 'Canal@123456';
 -- 授权 *.*表示所有库

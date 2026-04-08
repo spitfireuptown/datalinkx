@@ -5,20 +5,16 @@ import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXServerException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.result.StatusCode;
+import com.datalinkx.common.utils.IdUtils;
 import com.datalinkx.common.utils.JsonUtils;
-import com.datalinkx.dataserver.bean.domain.DsBean;
-import com.datalinkx.dataserver.bean.domain.JobBean;
-import com.datalinkx.dataserver.bean.domain.JobLogBean;
-import com.datalinkx.dataserver.bean.domain.JobRelationBean;
+import com.datalinkx.dataserver.bean.domain.*;
+import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
 import com.datalinkx.dataserver.bean.dto.JobDto;
 import com.datalinkx.dataserver.client.JobClientApi;
 import com.datalinkx.dataserver.config.properties.CommonProperties;
 import com.datalinkx.dataserver.controller.form.JobForm;
 import com.datalinkx.dataserver.controller.form.JobStateForm;
-import com.datalinkx.dataserver.repository.DsRepository;
-import com.datalinkx.dataserver.repository.JobLogRepository;
-import com.datalinkx.dataserver.repository.JobRelationRepository;
-import com.datalinkx.dataserver.repository.JobRepository;
+import com.datalinkx.dataserver.repository.*;
 import com.datalinkx.dataserver.service.DtsJobService;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
@@ -28,9 +24,11 @@ import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformFactory;
 import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
 import com.datalinkx.messagehub.service.MessageHubService;
+import com.datalinkx.sse.config.SseEmitterServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +37,10 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import java.io.File;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,30 +53,22 @@ import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_
  */
 @Service
 public class DtsJobServiceImpl implements DtsJobService {
-
     @Autowired
     JobRepository jobRepository;
-
     @Autowired
     JobRelationRepository jobRelationRepository;
-
-
     @Autowired
     JobLogRepository jobLogRepository;
-
-
     @Autowired
     DsServiceImpl dsServiceImpl;
-
     @Autowired
     DsRepository dsRepository;
-
     @Resource(name = "messageHubServiceImpl")
     MessageHubService messageHubService;
-
     @Autowired
     JobClientApi jobClientApi;
-
+    @Autowired
+    InSiteMessageRepository inSiteMessageRepository;
     @Autowired
     CommonProperties commonProperties;
 
@@ -91,7 +85,14 @@ public class DtsJobServiceImpl implements DtsJobService {
 
         // 解析计算任务图
         this.analysisComputeGraph(syncUnit, jobBean.getGraph());
-        return DatalinkXJobDetail.builder().jobId(jobId).type(jobBean.getType()).cover(jobBean.getCover()).syncUnit(syncUnit).build();
+        return DatalinkXJobDetail.builder()
+                .jobId(jobId)
+                .jobName(jobBean.getName())
+                .trigger("1")
+                .type(jobBean.getType())
+                .cover(jobBean.getCover())
+                .syncUnit(syncUnit)
+                .build();
     }
 
     @Override
@@ -159,7 +160,13 @@ public class DtsJobServiceImpl implements DtsJobService {
                 syncUnit.setCheckpointPath("");
             }
         }
-        return DatalinkXJobDetail.builder().jobId(jobId).type(MetaConstants.JobType.JOB_TYPE_STREAM).syncUnit(syncUnit).build();
+        return DatalinkXJobDetail.builder()
+                .jobId(jobId)
+                .jobName(jobBean.getName())
+                .trigger("1")
+                .type(MetaConstants.JobType.JOB_TYPE_STREAM)
+                .syncUnit(syncUnit)
+                .build();
     }
 
 

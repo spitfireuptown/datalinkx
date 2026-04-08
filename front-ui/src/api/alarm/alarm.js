@@ -50,3 +50,31 @@ export function delRuleObj (id) {
     method: 'POST'
   })
 }
+
+export function getInSiteMessageList (userId, page = 1, size = 10) {
+  return axios({
+    url: `/api/alarm/in-site-message/list/${userId}`,
+    method: 'GET',
+    params: {
+      page,
+      size
+    }
+  })
+}
+
+export function markInSiteMessageAsRead (userId, messageId = null) {
+  return axios({
+    url: `/api/alarm/in-site-message/read/${userId}`,
+    method: 'PUT',
+    params: {
+      messageId
+    }
+  })
+}
+
+export function markAllInSiteMessagesAsRead (userId) {
+  return axios({
+    url: `/api/alarm/in-site-message/read-all/${userId}`,
+    method: 'PUT'
+  })
+}

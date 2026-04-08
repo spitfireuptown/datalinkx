@@ -88,8 +88,6 @@ public final class MetaConstants {
         public static final String TRANSFORM_END = "custom-end-node";
         public static final String TRANSFORM_SQL = "sql";
         public static final String TRANSFORM_LLM = "llm";
-        public static final String TRANSFORM_START = "custom-start-node";
-        public static final String TRANSFORM_END = "custom-end-node";
         public static final String KEY_RESTORE_COLUMN_INDEX = "restoreColumnIndex";
         public static final String KEY_KAFKA_READ_INDEX = "kafkaReadMode";
         public static final String KEY_CHECKPOINT_INTERVAL = "checkpoint_interval";
@@ -106,6 +104,7 @@ public final class MetaConstants {
         // 成功才推送
         public static final Integer ALARM_SUCCESS_STATUS = 2;
         public static final String GLOBAL_ALARM_SUBJECT = "DatalinkX Pro系统告警";
+        public static final String JOB_STATUS_PUSH_TITLE = "任务执行状态推送";
         public static final String FLINKX_ENGINE = "flinkx";
         public static final String SEATUNNEL_ENGINE = "seatunnel";
     }

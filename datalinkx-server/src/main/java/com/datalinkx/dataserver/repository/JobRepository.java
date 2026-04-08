@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface JobRepository extends CRUDRepository<JobBean, String> {
 
-	@Query(value = "select * from JOB where job_id = :jobId", nativeQuery = true)
+	@Query("select j from JobBean j where j.jobId = :jobId")
 	Optional<JobBean> findByJobId(String jobId);
 
 	Optional<JobBean> findByName(String name);

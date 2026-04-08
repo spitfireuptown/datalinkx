@@ -2,7 +2,9 @@ package com.datalinkx.dataserver.controller;
 
 import com.datalinkx.common.result.WebResult;
 import com.datalinkx.dataserver.bean.bo.AlarmRuleBo;
+import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
 import com.datalinkx.dataserver.bean.vo.AlarmVo;
+import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.controller.form.AlarmForm;
 import com.datalinkx.dataserver.service.AlarmService;
 import io.swagger.annotations.Api;
@@ -75,5 +77,26 @@ public class AlarmController {
     @PostMapping("/rule/delete/{ruleId}")
     public void ruleDelete(@PathVariable String ruleId) {
         this.alarmService.ruleDelete(ruleId);
+    }
+    
+    // 站内信相关接口
+    @GetMapping("/in-site-message/list/{userId}")
+    public PageVo<List<InSiteMessageDto>> getInSiteMessages(
+            @PathVariable String userId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        return alarmService.getInSiteMessages(userId, page, size);
+    }
+    
+    @PutMapping("/in-site-message/read/{userId}")
+    public void markInSiteMessageAsRead(
+            @PathVariable String userId,
+            @RequestParam(required = false) Long messageId) {
+        alarmService.markInSiteMessageAsRead(messageId, userId);
+    }
+    
+    @PutMapping("/in-site-message/read-all/{userId}")
+    public void markAllInSiteMessagesAsRead(@PathVariable String userId) {
+        alarmService.markAllInSiteMessagesAsRead(userId);
     }
 }

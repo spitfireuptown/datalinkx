@@ -1,5 +1,6 @@
 package com.datalinkx.datajob.action;
 
+import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
@@ -9,6 +10,8 @@ import com.datalinkx.datajob.job.ExecutorStreamJobHandler;
 
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.base.jobgraph.StreamFlinkActionGraph;
+import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
+import com.datalinkx.messagehub.service.MessageHubService;
 import com.datalinkx.rpc.client.datalinkxserver.DatalinkXServerClient;
 import com.datalinkx.rpc.client.datalinkxserver.request.JobStateForm;
 import com.datalinkx.rpc.client.flink.FlinkClient;
@@ -21,7 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -44,6 +51,9 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
     @Autowired
     DistributedLock distributedLock;
 
+    @Resource(name = "messageHubServiceImpl")
+    MessageHubService messageHubService;
+
     @Override
     protected void begin(DatalinkXJobDetail info) {
         // 修改任务状态
@@ -61,6 +71,8 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
                 .checkpoint(unit.getCheckpointPath())
                 .errmsg(errmsg)
                 .build());
+        // 推送站内信
+        super.sendMessage(unit.getJobId(), unit.getTrigger(), status);
     }
 
     @Override
@@ -192,6 +204,8 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
                 .checkpointPath(info.getSyncUnit().getCheckpointPath())
                 .commonSettings(info.getSyncUnit().getCommonSettings())
                 .jobId(info.getJobId())
+                .jobName(info.getJobName())
+                .trigger(info.getTrigger())
                 .lockId(info.getLockId())
                 .build();
     }

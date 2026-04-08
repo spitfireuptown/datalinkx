@@ -2,7 +2,9 @@ package com.datalinkx.dataserver.service;
 
 
 import com.datalinkx.dataserver.bean.bo.AlarmRuleBo;
+import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
 import com.datalinkx.dataserver.bean.vo.AlarmVo;
+import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.controller.form.AlarmForm;
 
 import java.util.List;
@@ -29,4 +31,9 @@ public interface AlarmService {
     String ruleModify(AlarmForm.RuleModifyForm ruleModifyForm);
 
     void shutdown(String ruleId);
+    
+    // 站内信相关方法
+    PageVo<List<InSiteMessageDto>> getInSiteMessages(String userId, Integer page, Integer size);
+    void markInSiteMessageAsRead(Long messageId, String userId);
+    void markAllInSiteMessagesAsRead(String userId);
 }

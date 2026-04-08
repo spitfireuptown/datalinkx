@@ -17,11 +17,11 @@ public class BaseDomainBean {
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
     @Column(name = "ctime")
-    public Timestamp ctime;
+    private Timestamp ctime;
     @Column(name = "utime")
-    public Timestamp utime;
+    private Timestamp utime;
     @Column(name = "is_del")
-    public Integer isDel = 0;
+    private Integer isDel = 0;
 }

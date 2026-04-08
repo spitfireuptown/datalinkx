@@ -6,20 +6,25 @@ import com.datalinkx.common.utils.IdUtils;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.dataserver.bean.bo.AlarmRuleBo;
-import com.datalinkx.dataserver.bean.domain.AlarmComponentBean;
-import com.datalinkx.dataserver.bean.domain.AlarmRuleBean;
-import com.datalinkx.dataserver.bean.domain.JobBean;
+import com.datalinkx.dataserver.bean.domain.*;
 import com.datalinkx.dataserver.bean.dto.AlarmRuleDto;
+import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
 import com.datalinkx.dataserver.bean.vo.AlarmVo;
+import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.controller.form.AlarmForm;
 import com.datalinkx.dataserver.repository.AlarmRepository;
 import com.datalinkx.dataserver.repository.AlarmRuleRepository;
+import com.datalinkx.dataserver.repository.InSiteMessageRepository;
 import com.datalinkx.dataserver.repository.JobRepository;
 import com.datalinkx.dataserver.service.AlarmService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +39,10 @@ public class AlarmServiceImpl implements AlarmService {
     AlarmRuleRepository alarmRuleRepository;
     @Autowired
     JobRepository jobRepository;
+    @Autowired
+    InSiteMessageRepository inSiteMessageRepository;
+    
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     @Override
@@ -178,5 +187,53 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public void shutdown(String ruleId) {
         alarmRuleRepository.shutdown(ruleId);
+    }
+
+    @Override
+    public PageVo<List<InSiteMessageDto>> getInSiteMessages(String userId, Integer page, Integer size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Page<InSiteMessageBean> inSiteMessageBeans = inSiteMessageRepository.pageQuery(pageRequest, userId);
+        PageVo<List<InSiteMessageDto>> result = new PageVo<>();
+        result.setPageNo(page);
+        result.setPageSize(size);
+        result.setData(
+                inSiteMessageBeans.getContent().stream().map(messageBean -> {
+                    InSiteMessageDto messageDto = new InSiteMessageDto();
+                    BeanUtils.copyProperties(messageBean, messageDto);
+                    messageDto.setRead(messageBean.getRead());
+                    messageDto.setTime(sdf.format(messageBean.getCtime()));
+                    return messageDto;
+                }).collect(Collectors.toList())
+        );
+        result.setTotalPage(inSiteMessageBeans.getTotalPages());
+        result.setTotal(inSiteMessageBeans.getTotalElements());
+        return result;
+    }
+
+    @Override
+    public void markInSiteMessageAsRead(Long messageId, String userId) {
+        if (messageId != null) {
+            inSiteMessageRepository.updateIsReadById(messageId, true);
+        } else {
+            // 不传消息id时，将所有消息置为已读
+            inSiteMessageRepository.updateIsReadByUserId(userId, true);
+        }
+    }
+
+    @Override
+    public void markAllInSiteMessagesAsRead(String userId) {
+        inSiteMessageRepository.updateIsReadByUserId(userId, true);
+    }
+
+    private List<InSiteMessageDto> convertToDtoList(List<InSiteMessageBean> messageBeans) {
+        List<InSiteMessageDto> messageDtos = new ArrayList<>();
+        for (InSiteMessageBean messageBean : messageBeans) {
+            InSiteMessageDto messageDto = new InSiteMessageDto();
+            BeanUtils.copyProperties(messageBean, messageDto);
+            messageDto.setRead(messageBean.getRead());
+            messageDto.setTime(sdf.format(messageBean.getCtime()));
+            messageDtos.add(messageDto);
+        }
+        return messageDtos;
     }
 }

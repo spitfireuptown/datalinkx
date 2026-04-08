@@ -36,6 +36,8 @@
 </template>
 
 <script>
+import { getInSiteMessageList, markInSiteMessageAsRead, markAllInSiteMessagesAsRead } from '@/api/alarm/alarm'
+
 export default {
   name: 'HeaderNotice',
   props: {
@@ -49,7 +51,12 @@ export default {
       loading: false,
       visible: false,
       messages: [],
-      eventSource: null
+      eventSource: null,
+      reconnectCount: 0,
+      maxReconnectCount: 5,
+      currentPage: 1,
+      pageSize: 10,
+      total: 0
     }
   },
   computed: {
@@ -81,27 +88,27 @@ export default {
       this.visible = !this.visible
     },
     fetchNoticeData () {
-      // 模拟API请求获取消息数据
-      setTimeout(() => {
-        this.messages = [
-          {
-            id: 1,
-            title: '张三给你发送了一条消息',
-            time: '今天 09:30',
-            avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
-            read: false
+      const userId = '1'
+      getInSiteMessageList(userId, this.currentPage, this.pageSize).then(response => {
+        if (response && response.result) {
+          const result = response.result
+          if (result.data) {
+            this.messages = result.data
           }
-        ]
-        
+          this.total = result.total || 0
+        }
         this.loading = false
-      }, 1000)
+      }).catch(error => {
+        console.error('Failed to fetch notice data:', error)
+        this.loading = false
+      })
     },
     setupSSE () {
       // 建立SSE连接
       try {
-        // 使用现有的SSE连接接口
-        const userId = '1' // 这里应该从登录用户信息中获取
-        this.eventSource = new EventSource(`/api/sse/connect/${userId}`)
+        // 使用正确的SSE连接接口
+        const userId = '1'
+        this.eventSource = new EventSource(`/api/api/sse/connect/${userId}`)
         
         // 监听消息事件
         this.eventSource.addEventListener('message', (event) => {
@@ -116,15 +123,31 @@ export default {
         // 监听错误事件
         this.eventSource.addEventListener('error', (error) => {
           console.error('SSE connection error:', error)
-          // 尝试重连
-          setTimeout(() => {
-            this.setupSSE()
-          }, 5000)
+          // 尝试重连，但限制重连次数
+          this.reconnectCount++ 
+          if (this.reconnectCount < this.maxReconnectCount) {
+            setTimeout(() => {
+              this.setupSSE()
+            }, 5000)
+          } else {
+            console.error('Max reconnection attempts reached, stopping')
+          }
         })
         
         console.log('SSE connection established')
+        // 重置重连计数器
+        this.reconnectCount = 0
       } catch (error) {
         console.error('Error setting up SSE:', error)
+        // 尝试重连，但限制重连次数
+        this.reconnectCount++
+        if (this.reconnectCount < this.maxReconnectCount) {
+          setTimeout(() => {
+            this.setupSSE()
+          }, 5000)
+        } else {
+          console.error('Max reconnection attempts reached, stopping')
+        }
       }
     },
     handleSSEMessage (data) {
@@ -143,7 +166,7 @@ export default {
       const newMessage = {
         id: data.id || Date.now(),
         title: data.title || '新消息',
-        time: this.formatTime(new Date()),
+        time: data.time || this.formatTime(new Date()),
         avatar: data.avatar || 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
         read: false
       }
@@ -171,17 +194,25 @@ export default {
       }
     },
     markAsRead (id) {
-      const item = this.messages.find(item => item.id === id)
-      if (item) {
-        item.read = true
-        console.log(`Marked message ${id} as read`)
-      }
+      const userId = '1'
+      markInSiteMessageAsRead(userId, id).then(() => {
+        const item = this.messages.find(item => item.id === id)
+        if (item) {
+          item.read = true
+        }
+      }).catch(error => {
+        console.error('Failed to mark message as read:', error)
+      })
     },
     markAllAsRead () {
-      this.messages.forEach(item => {
-        item.read = true
+      const userId = '1'
+      markAllInSiteMessagesAsRead(userId).then(() => {
+        this.messages.forEach(item => {
+          item.read = true
+        })
+      }).catch(error => {
+        console.error('Failed to mark all messages as read:', error)
       })
-      console.log('Marked all messages as read')
     }
   }
 }

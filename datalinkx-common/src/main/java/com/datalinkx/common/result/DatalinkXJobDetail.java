@@ -20,6 +20,9 @@ import java.util.Map;
 public class DatalinkXJobDetail {
     @JsonProperty("job_id")
     String jobId;
+    @JsonProperty("job_name")
+    String jobName;
+    String trigger;
     Integer type;
     @JsonProperty("lock_id")
     String lockId;

@@ -15,7 +15,11 @@ import lombok.experimental.SuperBuilder;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BaseEngineActionGraph {
     // 流转任务id
-    public String jobId;
+    protected String jobId;
     // 底层引擎侧任务id
-    public String taskId;
+    protected String taskId;
+    // 流转任务名称
+    protected String jobName;
+    // 触发用户id
+    protected String trigger;
 }

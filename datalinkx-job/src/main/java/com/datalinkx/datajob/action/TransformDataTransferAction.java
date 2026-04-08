@@ -1,5 +1,6 @@
 package com.datalinkx.datajob.action;
 
+import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
@@ -10,6 +11,8 @@ import com.datalinkx.driver.dsdriver.base.writer.AbstractWriter;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformFactory;
 import com.datalinkx.driver.dsdriver.transformdriver.TransformNode;
+import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
+import com.datalinkx.messagehub.service.MessageHubService;
 import com.datalinkx.messagehub.transmitter.AlarmProduceTransmitter;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
@@ -26,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +49,8 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     DatalinkXServerClient datalinkXServerClient;
     @Autowired
     AlarmProduceTransmitter alarmProduceTransmitter;
+    @Resource(name = "messageHubServiceImpl")
+    MessageHubService messageHubService;
 
     @Override
     protected void begin(DatalinkXJobDetail info) {
@@ -58,6 +66,9 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
                 .jobStatus(status).endTime(new Date().getTime())
                 .errmsg(errmsg)
                 .build());
+
+        // 推送站内信
+        super.sendMessage(unit.getJobId(), unit.getTrigger(), status);
 
         // 父任务执行成功后级联触发子任务
         if (JOB_STATUS_SUCCESS == status) {
@@ -153,6 +164,8 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
                 .transformInfo(transformNodes)
                 .jobMode("batch")
                 .jobId(info.getJobId())
+                .jobName(info.getJobName())
+                .trigger(info.getTrigger())
                 .cover(info.getCover())
                 .parallelism(1)
                 .build();

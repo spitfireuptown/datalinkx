@@ -78,6 +78,9 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
                 .writeCount(unit.getWriteRecords())
                 .errmsg(errmsg)
                 .build());
+        // 推送站内信
+        super.sendMessage(unit.getJobId(), unit.getTrigger(), status);
+
         // 父任务执行成功后级联触发子任务
         if (JOB_STATUS_SUCCESS == status) {
             datalinkXServerClient.cascadeJob(unit.getJobId());
@@ -216,6 +219,8 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
                     .reader(jobDetail.getSyncUnit().getReader())
                     .writer(jobDetail.getSyncUnit().getWriter())
                     .jobId(jobDetail.getJobId())
+                    .jobName(jobDetail.getJobName())
+                    .trigger(jobDetail.getTrigger())
                     .cover(jobDetail.getCover())
                     .build();
     }

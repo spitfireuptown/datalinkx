@@ -1,9 +1,22 @@
 
 package com.datalinkx.datajob.action;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.datalinkx.common.constants.MessageHubConstants;
+import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.utils.IdUtils;
+import com.datalinkx.common.utils.JsonUtils;
+import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
+import com.datalinkx.messagehub.service.MessageHubService;
+import com.datalinkx.rpc.util.ApplicationContextUtil;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.datalinkx.common.constants.MetaConstants.JobStatus.*;
 
@@ -84,5 +97,27 @@ public abstract class AbstractDataTransferAction<T extends DatalinkXJobDetail, U
 
         // 6、结束后的钩子处理
         this.destroyed(execUnit, status, error.toString());
+    }
+
+    // 推送站内信
+    protected void sendMessage(String jobId, String trigger, Integer status) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss");
+        ProducerAdapterForm producerAdapterForm = new ProducerAdapterForm();
+        producerAdapterForm.setType(MessageHubConstants.REDIS_STREAM_TYPE);
+        producerAdapterForm.setTopic(MessageHubConstants.IN_SITE_MESSAGE_PUSH);
+        producerAdapterForm.setGroup(MessageHubConstants.GLOBAL_COMMON_GROUP);
+        Map<String, Object> jobProgress = new HashMap<String, Object>() {{
+            put("id", Instant.now().getEpochSecond());
+            put("job_id", jobId);
+            put("user_id", trigger);
+            put("status", status);
+            put("title", String.format("%s:%s %s", MetaConstants.CommonConstant.JOB_STATUS_PUSH_TITLE, jobId, MetaConstants.JobStatus.JOB_STATUS_TO_DB_NAME_MAP.get(status)));
+            put("avatar", "https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png");
+            put("time", now.format(formatter));
+        }};
+        producerAdapterForm.setMessage(JsonUtils.toJson(jobProgress));
+        MessageHubService messageHubService = (MessageHubService) ApplicationContextUtil.getBean("messageHubServiceImpl");
+        messageHubService.produce(producerAdapterForm);
     }
 }
