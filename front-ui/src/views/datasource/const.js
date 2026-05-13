@@ -6,7 +6,8 @@ import {
   kafkaPng,
   httpPng,
   mysqlcdcPng,
-  customPng
+  customPng,
+  ckPng
 } from '@/core/icons'
 
 const DataSourceType = [
@@ -37,6 +38,14 @@ const DataSourceType = [
   {
     label: 'KAFKA',
     value: 'kafka'
+  },
+  {
+    label: 'CUSTOM',
+    value: 'custom'
+  },
+  {
+    label: 'CK',
+    value: 'clickhouse'
   }
 ]
 
@@ -48,7 +57,8 @@ const DsGroupDefaultNumber = {
     'http': 0,
     'custom': 0,
     'mysqlcdc': 0,
-    'kafka': 0
+    'kafka': 0,
+    'clickhouse': 0
 }
 
 const dsTypeList = [
@@ -83,6 +93,12 @@ const dsTypeList = [
     img: redisPng
   },
   {
+    value: 'clickhouse',
+    label: 'ClickHouse',
+    dsTypeKey: 'clickhouse',
+    img: ckPng
+  },
+  {
     value: 'kafka',
     label: 'Kafka',
     dsTypeKey: 'kafka',
@@ -109,7 +125,8 @@ const dsImgObj = {
   'http': httpPng,
   'custom': customPng,
   'mysqlcdc': mysqlcdcPng,
-  'kafka': kafkaPng
+  'kafka': kafkaPng,
+  'clickhouse': ckPng
 }
 // 目标数据源 redis 类型
 const RedisTypes = [

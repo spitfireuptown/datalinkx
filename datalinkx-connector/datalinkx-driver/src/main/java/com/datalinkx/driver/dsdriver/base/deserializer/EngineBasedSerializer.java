@@ -135,20 +135,21 @@ public class EngineBasedSerializer extends JsonSerializer<Object> {
 
     private String getEngine(Object instance) {
         try {
-            Field engineField = instance.getClass().getDeclaredField("engine");
-            engineField.setAccessible(true);
+            // 使用 getField() 代替 getDeclaredField()，可以访问继承的字段
+            Field engineField = instance.getClass().getField("engine");
             Object engineValue = engineField.get(instance);
             return engineValue != null ? engineValue.toString() : MetaConstants.CommonConstant.FLINKX_ENGINE;
         } catch (NoSuchFieldException e) {
-            Class<?> superClass = instance.getClass().getSuperclass();
-            if (superClass != null && superClass != Object.class) {
+            // 如果 public 字段找不到，尝试遍历继承链查找 declared field
+            Class<?> clazz = instance.getClass();
+            while (clazz != null && clazz != Object.class) {
                 try {
-                    Field engineField = superClass.getDeclaredField("engine");
+                    Field engineField = clazz.getDeclaredField("engine");
                     engineField.setAccessible(true);
                     Object engineValue = engineField.get(instance);
                     return engineValue != null ? engineValue.toString() : MetaConstants.CommonConstant.FLINKX_ENGINE;
-                } catch (Exception ex) {
-                    return MetaConstants.CommonConstant.FLINKX_ENGINE;
+                } catch (NoSuchFieldException | IllegalAccessException eex) {
+                    clazz = clazz.getSuperclass();
                 }
             }
             return MetaConstants.CommonConstant.FLINKX_ENGINE;

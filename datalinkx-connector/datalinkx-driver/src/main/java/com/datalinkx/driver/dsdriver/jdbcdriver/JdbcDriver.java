@@ -394,6 +394,7 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
                 .user(this.jdbcSetupInfo.getUid())
                 .password(this.jdbcSetupInfo.getPwd())
                 .pluginName(PLUGIN_NAME)
+                .resultTableName(MetaConstants.CommonConstant.RESULT_TABLE)
                 .query(this.transferSinkSQL(writer))
                 .build();
     }

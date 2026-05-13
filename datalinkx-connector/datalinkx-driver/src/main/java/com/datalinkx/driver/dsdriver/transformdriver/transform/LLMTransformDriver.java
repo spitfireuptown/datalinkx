@@ -1,13 +1,16 @@
 package com.datalinkx.driver.dsdriver.transformdriver.transform;
 
 import com.datalinkx.common.constants.MetaConstants;
+import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.driver.dsdriver.base.transform.LLMNode;
 import com.datalinkx.driver.dsdriver.base.transform.TransformNode;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -17,19 +20,24 @@ import java.util.Map;
 @Slf4j
 public class LLMTransformDriver extends ITransformDriver {
 
-
     @Override
     public TransformNode transferInfo(Map<String, Object> commonSettings, String meta) {
-        // 内置prompt，有些模型理解不了。。。
+        Map<String, String> llmConfig = parseMeta(meta);
+        
+        String modelProvider = llmConfig.getOrDefault("modelProvider", "OPENAI");
+        String model = llmConfig.getOrDefault("model", (String) commonSettings.get("model"));
+        String apiKey = llmConfig.get("apiKey");
+        
         String innerPrompt = (String) commonSettings.getOrDefault("inner_prompt", "");
-        String prompt = String.format("%s \n %s", innerPrompt, meta);
+        String prompt = String.format("%s \n %s", innerPrompt, llmConfig.get("prompt"));
 
         LLMNode.Message promptMessage = LLMNode.Message.builder().content(prompt).build();
-        return LLMNode.builder()
-                .modelProvider("CUSTOM")
+        
+        LLMNode.LLMNodeBuilder builder = LLMNode.builder()
+                .modelProvider(modelProvider)
                 .pluginName(MetaConstants.CommonConstant.TRANSFORM_LLM)
-                .model((String) commonSettings.get("model"))
-                .prompt(meta)
+                .model(model)
+                .prompt(llmConfig.get("prompt"))
                 .openaiApiPath((String) commonSettings.get("openai.api_path"))
                 .customConfig(
                         LLMNode.CustomConfig.builder()
@@ -37,20 +45,56 @@ public class LLMTransformDriver extends ITransformDriver {
                                 .customRequestBody(
                                         LLMNode.customRequestBody
                                                 .builder()
-                                                .temperature(Double.valueOf((String) commonSettings.getOrDefault("temperature", 0.1)))
+                                                .temperature(Double.valueOf((String) commonSettings.getOrDefault("temperature", "0.1")))
                                                 .messages(Collections.singletonList(promptMessage))
                                                 .build()
                                 )
                                 .build()
                 )
                 .sourceTableName(MetaConstants.CommonConstant.SOURCE_TABLE)
-                .resultTableName(MetaConstants.CommonConstant.LLM_OUTPUT_TABLE)
-                .build();
+                .resultTableName(MetaConstants.CommonConstant.LLM_OUTPUT_TABLE);
+        
+        if (StringUtils.isNotEmpty(apiKey)) {
+            builder.apiKey(apiKey);
+        }
+        
+        return builder.build();
     }
 
     @Override
     public String analysisTransferMeta(JsonNode nodeMeta) {
         JsonNode dataMeta = nodeMeta.get("data");
-        return dataMeta.get("prompt").asText();
+        Map<String, String> llmConfig = new HashMap<>();
+        
+        if (dataMeta.has("modelProvider")) {
+            llmConfig.put("modelProvider", dataMeta.get("modelProvider").asText());
+        }
+        if (dataMeta.has("model")) {
+            llmConfig.put("model", dataMeta.get("model").asText());
+        }
+        if (dataMeta.has("apiKey")) {
+            llmConfig.put("apiKey", dataMeta.get("apiKey").asText());
+        }
+        if (dataMeta.has("prompt")) {
+            llmConfig.put("prompt", dataMeta.get("prompt").asText());
+        }
+        
+        return JsonUtils.toJson(llmConfig);
+    }
+    
+    private Map<String, String> parseMeta(String meta) {
+        if (StringUtils.isEmpty(meta)) {
+            Map<String, String> defaultConfig = new HashMap<>();
+            defaultConfig.put("prompt", "");
+            return defaultConfig;
+        }
+        try {
+            return JsonUtils.toObject(meta, Map.class);
+        } catch (Exception e) {
+            log.warn("Failed to parse LLM meta, using default: {}", e.getMessage());
+            Map<String, String> defaultConfig = new HashMap<>();
+            defaultConfig.put("prompt", meta);
+            return defaultConfig;
+        }
     }
 }

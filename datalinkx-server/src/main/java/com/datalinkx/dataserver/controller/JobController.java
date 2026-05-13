@@ -5,9 +5,12 @@ import com.datalinkx.dataserver.bean.vo.JobVo;
 import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.controller.form.JobForm;
 import com.datalinkx.dataserver.service.DtsJobService;
+import com.datalinkx.dataserver.bean.vo.DynamicCodeVo;
+import com.datalinkx.dataserver.service.DynamicCodeService;
 import com.datalinkx.dataserver.service.impl.JobRelationServiceImpl;
 import com.datalinkx.dataserver.service.impl.JobServiceImpl;
 import io.swagger.annotations.ApiOperation;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,9 @@ public class JobController {
 
 	@Autowired
 	private JobRelationServiceImpl jobRelationServiceImpl;
+
+	@Autowired
+	private DynamicCodeService dynamicCodeService;
 
 	@ApiOperation("流转任务-创建")
 	@PostMapping("/create")
@@ -112,5 +118,21 @@ public class JobController {
 	@RequestMapping("/relation_blood/info/{jobId}")
 	public JobVo.JobRelationBloodVo relationPage(@PathVariable String jobId) {
 		return jobRelationServiceImpl.relationBloodInfo(jobId);
+	}
+
+	@ApiOperation("校验动态编译源代码")
+	@PostMapping("/validate_dynamic_code")
+	public WebResult<DynamicCodeVo.ValidateResult> validateDynamicCode(@RequestBody ValidateForm form) {
+		log.info("开始校验动态编译源代码");
+		DynamicCodeVo.ValidateResult result = dynamicCodeService.validateAndParse(form.getSource_code());
+		return WebResult.of(result);
+	}
+
+	/**
+	 * 校验请求表单
+	 */
+	@Data
+	public static class ValidateForm {
+		private String source_code;
 	}
 }

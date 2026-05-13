@@ -28,3 +28,5 @@
 
 # G1GC
 -XX:+UseG1GC
+
+-Dseatunnel.classloader.parentFirst=true

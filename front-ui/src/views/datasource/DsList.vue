@@ -180,14 +180,17 @@ export default {
       }
     },
     getAllDsNumber () {
+      this.loading = true
       getDsGroup().then(res => {
-        this.loading = false
         if (res.status === '0') {
-          this.dsGroupNumber = Object.assign({}, this.dsGroupNumber, res.result)
+          // 合并返回的数据，保留默认值以防某些类型未返回
+          this.dsGroupNumber = Object.assign({}, DsGroupDefaultNumber, res.result)
         } else {
-          this.$message.error(res.error)
+          this.$message.error(res.error || res.errstr || '获取数据源统计失败')
         }
       }).catch(reason => {
+        console.error('获取数据源统计失败:', reason)
+      }).finally(() => {
         this.loading = false
       })
     },
@@ -215,18 +218,21 @@ export default {
       }
     },
     delete (record) {
-      console.log(record)
+      this.loading = true
       delObj(record.dsId).then(res => {
         if (res.status === '0') {
           this.$message.success('删除成功')
+          // 刷新当前类型的数据源列表
           this.init()
-          this.getAllDsNumber()
         } else {
-          this.$message.error(res.errstr)
+          this.$message.error(res.errstr || res.error || '删除失败')
         }
+      }).catch(reason => {
+        console.error('删除数据源失败:', reason)
+        this.$message.error('删除失败')
       }).finally(() => {
+        // 刷新所有数据源类型的统计数量
         this.getAllDsNumber()
-        this.loading = false
       })
     },
     show (record) {
@@ -239,10 +245,10 @@ export default {
       }
     },
     handleOk (data) {
+      // 先刷新当前类型的数据源列表
       this.init()
-      if (data.type === 'add') {
-        this.getAllDsNumber()
-      }
+      // 然后刷新所有数据源类型的统计数量
+      this.getAllDsNumber()
     },
     queryData () {
       this.pages.current = 1

@@ -60,6 +60,7 @@ public class DsServiceImpl implements DsService {
 		SETUP_INFO_GENERATORS.put(MetaConstants.DsType.DS_KAFKA, new KafkaSetupInfoGenerator());
 		SETUP_INFO_GENERATORS.put(MetaConstants.DsType.DS_MYSQLCDC, new MySQLCDCInfoGenerator());
 		SETUP_INFO_GENERATORS.put(MetaConstants.DsType.DS_CUSTOM, new CustomSetupInfoGenerator());
+		SETUP_INFO_GENERATORS.put(MetaConstants.DsType.DS_CLICKHOUSE, new ClickHouseSetupInfoGenerator());
 	}
 
 

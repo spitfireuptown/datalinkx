@@ -26,6 +26,6 @@ public final class ITransformFactory {
     }
 
     private static String getDriverClass(String type) {
-        return PACKAGE_PREFIX + type.toUpperCase() + "TransformDriver";
+        return PACKAGE_PREFIX + type + "TransformDriver";
     }
 }

@@ -286,13 +286,18 @@ export default {
                 // 清楚表单数据
                 this.handleCancel()
                 this.$message.success('新增成功')
+                // 触发全局事件，通知其他组件刷新统计信息
+                this.$emit('dsCreated', { type: 'add' })
+                // 刷新统计信息
+                this.refreshStats()
               } else {
                 this.confirmLoading = false
                 this.$message.error(res.errstr)
               }
             }).catch(err => {
               this.confirmLoading = false
-              this.$message.error(err.errstr)
+              const errorMessage = err.errstr || err.response?.data?.errstr || '保存失败'
+              this.$message.error(errorMessage)
             })
           } else if (this.type === 'edit') {
             console.log('----', values)
@@ -309,12 +314,20 @@ export default {
               }
             }).catch(err => {
               this.confirmLoading = false
-              this.$message.error(err.errstr)
+              const errorMessage = err.errstr || err.response?.data?.errstr || '修改失败'
+              this.$message.error(errorMessage)
             })
           }
         }
       })
       selectTables = []
+    },
+
+    // 刷新统计信息
+    refreshStats () {
+      // 这里可以发出事件或其他方式通知全局统计刷新
+      // 例如，可以通过 Vuex 或者总线模式通知其他组件
+      this.$emit('refreshStats')
     },
     handleCancel () {
       this.visible = false

@@ -13,6 +13,41 @@
     </div>
 
     <div class="llm-content">
+      <span class="llm-label">模型提供商</span>
+      <a-select
+        :value="modelProvider"
+        style="width: 100%; margin-bottom: 12px;"
+        placeholder="请选择模型提供商"
+        @change="handleModelProviderChange"
+      >
+        <a-select-option value="OPENAI">OPENAI</a-select-option>
+        <a-select-option value="DOUBAO">DOUBAO</a-select-option>
+        <a-select-option value="KIMIAI">KIMIAI</a-select-option>
+        <a-select-option value="CUSTOM">CUSTOM</a-select-option>
+      </a-select>
+    </div>
+
+    <div class="llm-content">
+      <span class="llm-label">模型名称</span>
+      <a-input
+        :value="model"
+        style="width: 100%; margin-bottom: 12px;"
+        placeholder="请输入模型名称"
+        @input="handleModelInput"
+      />
+    </div>
+
+    <div class="llm-content">
+      <span class="llm-label">API Key</span>
+      <a-input
+        :value="apiKey"
+        style="width: 100%; margin-bottom: 12px;"
+        placeholder="请输入API Key"
+        @input="handleApiKeyInput"
+      />
+    </div>
+
+    <div class="llm-content">
       <span class="llm-label">大模型prompt</span>
       <a-textarea
         :value="prompt"
@@ -33,6 +68,18 @@ export default {
       type: Boolean,
       default: false
     },
+    modelProvider: {
+      type: String,
+      default: 'OPENAI'
+    },
+    model: {
+      type: String,
+      default: ''
+    },
+    apiKey: {
+      type: String,
+      default: ''
+    },
     prompt: {
       type: String,
       default: ''
@@ -40,6 +87,18 @@ export default {
   },
 
   methods: {
+    handleModelProviderChange (value) {
+      this.$emit('model-provider-change', value)
+    },
+
+    handleModelInput (e) {
+      this.$emit('model-change', e.target.value)
+    },
+
+    handleApiKeyInput (e) {
+      this.$emit('api-key-change', e.target.value)
+    },
+
     handlePromptInput (e) {
       this.$emit('prompt-change', e.target.value)
     },

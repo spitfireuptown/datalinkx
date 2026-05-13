@@ -34,6 +34,10 @@ seatunnel:
           namespace: /tmp/seatunnel/checkpoint_snapshot
           storage.type: hdfs
           fs.defaultFS: file:///tmp/ # Ensure that the directory has written permission
+    classloader:
+      plugin:
+        parent-first: true
+        system-classes-loader-parent-first: true
     telemetry:
       metric:
         enabled: false

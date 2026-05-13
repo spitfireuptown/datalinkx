@@ -22,6 +22,7 @@ public final class MetaConstants {
         public static final String DS_KAFKA = "kafka";
         public static final String DS_MYSQLCDC = "mysqlcdc";
         public static final String DS_CUSTOM = "custom";
+        public static final String DS_CLICKHOUSE = "clickhouse";
 
 
         public static final String REDIS_SPIT_STR = "!-!-!";

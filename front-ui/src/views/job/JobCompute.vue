@@ -10,7 +10,7 @@
       :source-fields="sourceFields"
       :mappings="sourceConfig.mappings"
       :sync-mode="syncConfig.mode"
-      :trans-cover="syncConfig.cover"
+      :trans-cover="transCover"
       :increment-field="syncConfig.incrementField"
       :show-sync-config="showSyncConfig"
       @ds-change="handleFromChange"
@@ -47,7 +47,13 @@
     <!-- 大模型算子抽屉 -->
     <LlmDrawer
       :visible="drawerVisible.llm"
+      :model-provider="llmConfig.modelProvider"
+      :model="llmConfig.model"
+      :api-key="llmConfig.apiKey"
       :prompt="llmConfig.prompt"
+      @model-provider-change="handleModelProviderChange"
+      @model-change="handleModelChange"
+      @api-key-change="handleApiKeyChange"
       @prompt-change="handlePromptChange"
       @visible-change="afterVisibleChange"
       @close="handleDrawerClose('llm')"
@@ -57,7 +63,10 @@
     <DynamicDrawer
       :visible="drawerVisible.dynamic"
       :source-code="dynamicConfig.sourceCode"
+      :output-fields="dynamicConfig.outputFields"
       @source-code-change="handleSourceCodeChange"
+      @output-fields-change="handleOutputFieldsChange"
+      @validate-success="handleValidateSuccess"
       @visible-change="afterVisibleChange"
       @close="handleDrawerClose('dynamic')"
     />
@@ -209,12 +218,16 @@ export default {
 
     // LLM算子配置
     const llmConfig = {
+      modelProvider: '',
+      model: '',
+      apiKey: '',
       prompt: ''
     }
 
     // 动态编译算子配置
     const dynamicConfig = {
-      sourceCode: ''
+      sourceCode: '',
+      outputFields: []
     }
 
     // 目标配置
@@ -782,6 +795,27 @@ export default {
     // ========== LLM算子相关 ==========
 
     /**
+     * 模型提供商变更
+     */
+    handleModelProviderChange (value) {
+      this.llmConfig.modelProvider = value
+    },
+
+    /**
+     * 模型名称变更
+     */
+    handleModelChange (value) {
+      this.llmConfig.model = value
+    },
+
+    /**
+     * API Key变更
+     */
+    handleApiKeyChange (value) {
+      this.llmConfig.apiKey = value
+    },
+
+    /**
      * Prompt变更
      */
     handlePromptChange (value) {
@@ -792,6 +826,29 @@ export default {
 
     handleSourceCodeChange (value) {
       this.dynamicConfig.sourceCode = value
+    },
+
+    handleOutputFieldsChange (fields) {
+      this.dynamicConfig.outputFields = fields
+    },
+
+    /**
+     * 语法校验成功，自动添加解析的字段到输出字段列表
+     */
+    handleValidateSuccess (outputFields) {
+      // 将解析的字段添加到输出字段列表
+      outputFields.forEach(field => {
+        // 检查字段是否已存在
+        const exists = this.dynamicConfig.outputFields.some(f => f.name === field.name)
+        if (!exists) {
+          this.dynamicConfig.outputFields.push({
+            name: field.name,
+            type: field.type
+          })
+        }
+      })
+      // 触发字段变更事件，更新节点数据
+      this.saveNodeData()
     },
 
     // ========== 目标数据源相关 ==========
@@ -916,6 +973,32 @@ export default {
           this.toDsSourceFields.splice(index, 1)
         }
       }
+
+      // 收集动态编译算子的输出字段
+      const dynamicNodes = this.graph.getNodes().filter(node => node.shape === NODE_SHAPE.DYNAMIC)
+      const dynamicOutputFields = []
+      dynamicNodes.forEach(node => {
+        const outputFields = node.getData()?.outputFields || []
+        outputFields.forEach(field => {
+          if (!dynamicOutputFields.includes(field.name)) {
+            dynamicOutputFields.push(field.name)
+          }
+        })
+      })
+
+      // 添加动态编译算子的输出字段
+      dynamicOutputFields.forEach(fieldName => {
+        if (!this.toDsSourceFields.includes(fieldName)) {
+          this.toDsSourceFields.push(fieldName)
+        }
+      })
+
+      // 移除已不存在的动态编译字段
+      this.toDsSourceFields = this.toDsSourceFields.filter(field => {
+        return this.sourceConfig.mappings.some(m => m.sourceField === field) ||
+               field === 'llm_output' ||
+               dynamicOutputFields.includes(field)
+      })
     },
 
     /**
@@ -954,11 +1037,15 @@ export default {
       }
 
       if (shape === NODE_SHAPE.LLM) {
+        nodeData.modelProvider = this.llmConfig.modelProvider
+        nodeData.model = this.llmConfig.model
+        nodeData.apiKey = this.llmConfig.apiKey
         nodeData.prompt = this.llmConfig.prompt
       }
 
       if (shape === NODE_SHAPE.DYNAMIC) {
         nodeData.sourceCode = this.dynamicConfig.sourceCode
+        nodeData.outputFields = [...this.dynamicConfig.outputFields]
       }
 
       if (shape === NODE_SHAPE.START) {
@@ -1185,7 +1272,14 @@ export default {
             this.sqlConfig.tags = cell.data?.tags || []
           }
           if (cell.shape === NODE_SHAPE.LLM) {
+            this.llmConfig.modelProvider = cell.data?.modelProvider || ''
+            this.llmConfig.model = cell.data?.model || ''
+            this.llmConfig.apiKey = cell.data?.apiKey || ''
             this.llmConfig.prompt = cell.data?.prompt || ''
+          }
+          if (cell.shape === NODE_SHAPE.DYNAMIC) {
+            this.dynamicConfig.sourceCode = cell.data?.sourceCode || ''
+            this.dynamicConfig.outputFields = cell.data?.outputFields || []
           }
           if (cell.shape === NODE_SHAPE.START) {
             this.sourceConfig.mappings = cell.data?.mappings || []
@@ -1204,8 +1298,12 @@ export default {
       this.sqlConfig.whereValue = ''
       this.sqlConfig.groupValue = ''
       this.sqlConfig.tags = []
+      this.llmConfig.modelProvider = ''
+      this.llmConfig.model = ''
+      this.llmConfig.apiKey = ''
       this.llmConfig.prompt = ''
       this.dynamicConfig.sourceCode = ''
+      this.dynamicConfig.outputFields = []
       this.sourceConfig.mappings = []
     },
 
@@ -1304,6 +1402,10 @@ export default {
       width: 100%;
       border-radius: 10px;
       margin: 5px 0;
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      gap: 10px;
     }
   }
 

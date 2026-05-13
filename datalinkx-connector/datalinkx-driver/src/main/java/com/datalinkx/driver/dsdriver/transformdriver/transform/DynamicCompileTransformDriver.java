@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 @Slf4j
-public class DynamicCompileDriver extends ITransformDriver {
+public class DynamicCompileTransformDriver extends ITransformDriver {
     @Override
     public TransformNode transferInfo(Map<String, Object> commonSettings, String meta) {
         return DynamicCompileNode.builder()

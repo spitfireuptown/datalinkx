@@ -300,26 +300,24 @@ export default {
       }
 
       connect()
-    },
-    beforeDestroy () {
-      if (this.eventSource) {
-        this.eventSource.close()
-      }
-      closeConnect('jobList')
-      // 清理定时刷新
-      if (this.refreshTimer) {
-        clearInterval(this.refreshTimer)
-        this.refreshTimer = null
-      }
-    },
-    created () {
-      this.init()
-      this.createEventSource()
-      // 启动定时刷新，每10秒刷新一次任务列表
-      this.refreshTimer = setInterval(() => {
-        this.init()
-      }, 15000)
     }
+  },
+  beforeDestroy () {
+    if (this.eventSource) {
+      this.eventSource.close()
+    }
+    closeConnect('jobList')
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer)
+      this.refreshTimer = null
+    }
+  },
+  created () {
+    this.init()
+    this.createEventSource()
+    this.refreshTimer = setInterval(() => {
+      this.init()
+    }, 15000)
   }
 }
 </script>
