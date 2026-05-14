@@ -44,7 +44,7 @@ const DataSourceType = [
     value: 'custom'
   },
   {
-    label: 'CK',
+    label: 'ClickHouse',
     value: 'clickhouse'
   }
 ]

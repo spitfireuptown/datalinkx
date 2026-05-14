@@ -129,4 +129,21 @@ public abstract class AbstractDataTransferAction<T extends DatalinkXJobDetail, U
     protected void sendMessage(String jobId, String trigger, Integer status) {
         this.sendMessage(jobId, trigger, status, "");
     }
+
+    // 实时推送流转进度
+    protected void sendJobProgress(String jobId, long readRecords, long writeRecords) {
+        ProducerAdapterForm producerAdapterForm = new ProducerAdapterForm();
+        producerAdapterForm.setType(MessageHubConstants.REDIS_STREAM_TYPE);
+        producerAdapterForm.setTopic(MessageHubConstants.JOB_PROGRESS_TOPIC);
+        producerAdapterForm.setGroup(MessageHubConstants.GLOBAL_COMMON_GROUP);
+        Map<String, Object> jobProgress = new HashMap<String, Object>() {{
+            put("job_id", jobId);
+            put("status", 1);
+            put("read_records", readRecords);
+            put("write_records", writeRecords);
+        }};
+        producerAdapterForm.setMessage(JsonUtils.toJson(jobProgress));
+        MessageHubService messageHubService = (MessageHubService) ApplicationContextUtil.getBean("messageHubServiceImpl");
+        messageHubService.produce(producerAdapterForm);
+    }
 }

@@ -191,18 +191,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
         unitParam.setWriteRecords(writeRecords.get() - errorRecords.get());
 
         // 实时推送流转进度
-        ProducerAdapterForm producerAdapterForm = new ProducerAdapterForm();
-        producerAdapterForm.setType(MessageHubConstants.REDIS_STREAM_TYPE);
-        producerAdapterForm.setTopic(MessageHubConstants.JOB_PROGRESS_TOPIC);
-        producerAdapterForm.setGroup(MessageHubConstants.GLOBAL_COMMON_GROUP);
-        Map<String, Object> jobProgress = new HashMap<String, Object>() {{
-            put("job_id", unitParam.getJobId());
-            put("status", 1);
-            put("read_records", unitParam.getReadRecords());
-            put("write_records", unitParam.getWriteRecords());
-        }};
-        producerAdapterForm.setMessage(JsonUtils.toJson(jobProgress));
-        messageHubService.produce(producerAdapterForm);
+        super.sendJobProgress(unitParam.getJobId(), unitParam.getReadRecords(), unitParam.getWriteRecords());
     }
 
     @Override
