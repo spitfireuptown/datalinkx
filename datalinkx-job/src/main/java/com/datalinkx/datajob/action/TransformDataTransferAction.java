@@ -121,7 +121,7 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
             log.error(errorMsg);
             throw new DatalinkXJobException(errorMsg);
         }
-        
+        super.sendJobProgress(unit.getJobId(), jobOverviewResp.getMetrics().getSourceReceivedCount(), jobOverviewResp.getMetrics().getSinkWriteCount());
         return false;
     }
 

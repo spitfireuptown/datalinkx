@@ -1,7 +1,6 @@
 
 package com.datalinkx.datajob.action;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.result.DatalinkXJobDetail;
@@ -131,7 +130,7 @@ public abstract class AbstractDataTransferAction<T extends DatalinkXJobDetail, U
     }
 
     // 实时推送流转进度
-    protected void sendJobProgress(String jobId, long readRecords, long writeRecords) {
+    protected void sendJobProgress(String jobId, Object readRecords, Object writeRecords) {
         ProducerAdapterForm producerAdapterForm = new ProducerAdapterForm();
         producerAdapterForm.setType(MessageHubConstants.REDIS_STREAM_TYPE);
         producerAdapterForm.setTopic(MessageHubConstants.JOB_PROGRESS_TOPIC);
