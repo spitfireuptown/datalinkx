@@ -131,10 +131,10 @@ public abstract class AbstractDataTransferAction<T extends DatalinkXJobDetail, U
     }
 
     // 实时推送流转进度
-    protected void sendJobProgress(String jobId, long readRecords, long writeRecords) {
+    protected void sendJobProgress(String jobId, String topic, long readRecords, long writeRecords) {
         ProducerAdapterForm producerAdapterForm = new ProducerAdapterForm();
         producerAdapterForm.setType(MessageHubConstants.REDIS_STREAM_TYPE);
-        producerAdapterForm.setTopic(MessageHubConstants.JOB_PROGRESS_TOPIC);
+        producerAdapterForm.setTopic(topic);
         producerAdapterForm.setGroup(MessageHubConstants.GLOBAL_COMMON_GROUP);
         Map<String, Object> jobProgress = new HashMap<String, Object>() {{
             put("job_id", jobId);

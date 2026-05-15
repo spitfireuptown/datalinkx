@@ -43,9 +43,9 @@ public class SseEmitterServerInitializer {
 
     private String generateNodeId() {
         try {
-            return InetAddress.getLocalHost().getHostAddress() + ":" + System.currentTimeMillis();
+            return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            return "node-" + System.currentTimeMillis();
+            return "node-unknown";
         }
     }
 }

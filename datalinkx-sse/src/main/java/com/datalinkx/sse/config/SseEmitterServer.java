@@ -70,8 +70,7 @@ public class SseEmitterServer {
 
         if (isDistributed && redisTemplate != null && currentNodeId != null) {
             try {
-                String nodeInfo = currentNodeId + ":" + System.currentTimeMillis();
-                redisTemplate.opsForHash().put(SSE_USER_KEY, employeeCode, nodeInfo);
+                redisTemplate.opsForHash().put(SSE_USER_KEY, employeeCode, currentNodeId);
                 ensureRedisSubscriber(employeeCode);
                 flushOfflineMessages(employeeCode);
                 log.info("SSE user[{}] registered to node[{}]", employeeCode, currentNodeId);
@@ -134,6 +133,7 @@ public class SseEmitterServer {
             }
         } catch (Exception e) {
             log.error("Failed to send SSE message to user[{}]: {}", employeeCode, e.getMessage());
+            log.error(e.getMessage(), e);
             storeOfflineMessage(employeeCode, jsonMsg);
         }
     }

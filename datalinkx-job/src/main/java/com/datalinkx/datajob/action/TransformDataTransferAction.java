@@ -1,5 +1,6 @@
 package com.datalinkx.datajob.action;
 
+import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXJobException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
@@ -109,7 +110,10 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
         }
 
         JobOverviewResp jobOverviewResp = seaTunnelClient.jobOverview(taskId);
-        if (MetaConstants.JobStatus.SEATUNNEL_JOB_FINISH.equalsIgnoreCase(jobOverviewResp.getJobStatus())) {
+        if (MetaConstants.JobStatus.SEATUNNEL_JOB_FINISH.equalsIgnoreCase(jobOverviewResp.getJobStatus())) {    
+            unit.setReadRecords(ObjectUtils.isEmpty(jobOverviewResp.getMetrics().getSourceReceivedCount()) ? 0 : Long.valueOf(String.valueOf(jobOverviewResp.getMetrics().getSourceReceivedCount())));
+            unit.setWriteRecords(ObjectUtils.isEmpty(jobOverviewResp.getMetrics().getSinkWriteCount()) ? 0 : Long.valueOf(String.valueOf(jobOverviewResp.getMetrics().getSinkWriteCount())));
+            super.sendJobProgress(unit.getJobId(), MessageHubConstants.COMPUTE_JOB_PROGRESS_TOPIC, unit.getReadRecords(), unit.getWriteRecords());
             return true;
         }
 
@@ -121,7 +125,11 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
             log.error(errorMsg);
             throw new DatalinkXJobException(errorMsg);
         }
-        
+
+        unit.setReadRecords(ObjectUtils.isEmpty(jobOverviewResp.getMetrics().getSourceReceivedCount()) ? 0 : Long.valueOf(String.valueOf(jobOverviewResp.getMetrics().getSourceReceivedCount())));
+        unit.setWriteRecords(ObjectUtils.isEmpty(jobOverviewResp.getMetrics().getSinkWriteCount()) ? 0 : Long.valueOf(String.valueOf(jobOverviewResp.getMetrics().getSinkWriteCount())));
+
+        super.sendJobProgress(unit.getJobId(), MessageHubConstants.COMPUTE_JOB_PROGRESS_TOPIC, unit.getReadRecords(), unit.getWriteRecords());
         return false;
     }
 

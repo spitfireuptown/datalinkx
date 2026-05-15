@@ -62,6 +62,7 @@ public final class MetaConstants {
         public static final String SEATUNNEL_JOB_FAILED = "FAILED";
         public static final String SEATUNNEL_SUBMIT_JOB_ERROR_STATUS = "fail";
         public static final String SSE_JOB_STATUS = "jobList";
+        public static final String SSE_COMPUTE_JOB_STATUS = "computeJobList";
         public static final String SSE_COPILOT = "datalinkx_copilot";
         public static Map<Integer, String> JOB_STATUS_TO_DB_NAME_MAP = new HashMap<Integer, String>() {{
             put(MetaConstants.JobStatus.JOB_STATUS_ERROR, "任务失败");

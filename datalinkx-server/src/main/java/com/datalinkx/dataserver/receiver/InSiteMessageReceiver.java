@@ -2,11 +2,14 @@ package com.datalinkx.dataserver.receiver;
 
 import com.datalinkx.common.constants.MessageHubConstants;
 import com.datalinkx.common.utils.JsonUtils;
+import com.datalinkx.common.utils.ObjectUtils;
 import com.datalinkx.dataserver.bean.domain.InSiteMessageBean;
 import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
 import com.datalinkx.dataserver.repository.InSiteMessageRepository;
 import com.datalinkx.messagehub.config.annotation.MessageHub;
 import com.datalinkx.sse.config.SseEmitterServer;
+
+import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +34,7 @@ public class InSiteMessageReceiver {
         InSiteMessageBean inSiteMessageBean = new InSiteMessageBean();
         BeanUtils.copyProperties(inSiteMessageDto, inSiteMessageBean);
         inSiteMessageBean.setRead(false);
-        inSiteMessageBean.setUserId(inSiteMessageDto.getUserId());
+        inSiteMessageBean.setUserId(ObjectUtils.isEmpty(inSiteMessageDto.getUserId()) ? "1" : inSiteMessageDto.getUserId());
         inSiteMessageRepository.save(inSiteMessageBean);
     }
 }
