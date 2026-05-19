@@ -11,6 +11,8 @@ import lombok.experimental.SuperBuilder;
 public class DynamicCompileNode extends TransformNode {
     @JsonProperty("compile_language")
     private String compileLanguage;
+    @JsonProperty("compile_pattern")
+    private String compilePattern;
     @JsonProperty("source_code")
     private String sourceCode;
 }

@@ -131,7 +131,7 @@ public class DtsJobServiceImpl implements DtsJobService {
 
         DatalinkXJobDetail.Writer writer = DatalinkXJobDetail.Writer.builder()
                 .tableName(jobBean.getToTb())
-                .columns(toColumns)
+                .toColumns(toColumns)
                 .updateKey(syncModeForm.getUpdateKey())
                 .connectId(dsServiceImpl.getConnectId(dsId2Object.get(jobBean.getWriterDsId())))
                 .batchSize(commonProperties.getStreamBatchSize())
@@ -297,15 +297,18 @@ public class DtsJobServiceImpl implements DtsJobService {
                 );
 
         JobDto.JobGraphDto jobGraphInfo = dsServiceImpl.getJobGraphInfo(toDs);
-        List<String> toCols = jobConf
-                .stream()
-                .map(JobForm.FieldMappingForm::getTargetField)
-                .collect(Collectors.toList());
+        List<String> toCols = new ArrayList<>();
+        List<String> fromCols = new ArrayList<>();
 
-        String insertFields = jobConf.stream()
-                .map(JobForm.FieldMappingForm::getTargetField)
+        for (JobForm.FieldMappingForm fieldMappingForm : jobConf) {
+            toCols.add(fieldMappingForm.getTargetField());
+            fromCols.add(fieldMappingForm.getSourceField());
+        }
+
+        String insertFields = toCols.stream()
                 .filter(targetField -> !ObjectUtils.isEmpty(targetField))
                 .collect(Collectors.joining(", "));
+
         IDsWriter dsWriter = DsDriverFactory.getDsWriter(dsServiceImpl.getConnectId(toDs));
 
 
@@ -315,7 +318,8 @@ public class DtsJobServiceImpl implements DtsJobService {
                 .type(jobGraphInfo.getType())
                 .insertFields(insertFields)
                 .tableName(jobBean.getToTb())
-                .columns(toCols)
+                .toColumns(toCols)
+                .fromColumns(fromCols)
                 .batchSize(commonProperties.getFetchSize())
                 .build();
         writer.setWriterGraph(dsWriter.getWriterInfo(writer));

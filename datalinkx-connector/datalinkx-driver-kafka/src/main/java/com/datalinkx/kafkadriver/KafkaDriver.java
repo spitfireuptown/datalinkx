@@ -50,7 +50,7 @@ public class KafkaDriver extends AbstractDriver<KafkaSetupInfo, KafkaReader, Kaf
         writerInfo.setParameter(KafkaWriter.builder().topic(writer.getTableName())
                 .timezone(kafkaSetupInfo.getTimezone())
                 .producerSettings(CommonSetting.builder().bootstrapServers(kafkaSetupInfo.getServer() + ":" + kafkaSetupInfo.getPort()).build())
-                .tableFields(writer.getColumns())
+                .tableFields(writer.getToColumns())
                 .build());
         return writerInfo;
     }

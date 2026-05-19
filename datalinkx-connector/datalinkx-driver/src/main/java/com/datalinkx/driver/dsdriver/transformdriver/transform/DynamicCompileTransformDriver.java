@@ -17,13 +17,15 @@ public class DynamicCompileTransformDriver extends ITransformDriver {
                 .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE)
                 .sourceCode(meta)
                 .compileLanguage(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_LANGUAGE)
+                .compilePattern(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_PATTERN)
                 .sourceTableName(MetaConstants.CommonConstant.SOURCE_TABLE)
-                .resultTableName(MetaConstants.CommonConstant.LLM_OUTPUT_TABLE)
+                .resultTableName(MetaConstants.CommonConstant.DYNAMIC_COMPILE_OUTPUT_TABLE)
                 .build();
     }
 
     @Override
     public String analysisTransferMeta(JsonNode nodeMeta) {
-        return "";
+        JsonNode dataMeta = nodeMeta.get("data");
+        return dataMeta.get("sourceCode").asText();
     }
 }

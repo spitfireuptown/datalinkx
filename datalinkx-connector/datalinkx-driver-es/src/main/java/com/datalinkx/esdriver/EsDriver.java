@@ -164,7 +164,7 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
             }
         }
         // 如果是增量模式,必须要把增量字段进行流转,根据下标一一对应,找到目标库的增量字段
-        String writerIncreaseField = writer.getColumns().get(increaseFieldIndex);
+        String writerIncreaseField = writer.getToColumns().get(increaseFieldIndex);
         DbTableField writerIncreaseTableField = this.getFields(writer.getCatalog(), writer.getSchema(), writer.getTableName())
                 .stream()
                 .filter(field -> Objects.equals(field.getName(), writerIncreaseField))
@@ -209,7 +209,7 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
                 .collect(Collectors.toMap(DbTableField::getName, DbTableField::getType));
 
         List<EsWriter.EsColumn> esColumns = writer
-                                            .getColumns()
+                                            .getToColumns()
                                             .stream()
                                             .map(column -> EsWriter
                                                     .EsColumn.builder()
