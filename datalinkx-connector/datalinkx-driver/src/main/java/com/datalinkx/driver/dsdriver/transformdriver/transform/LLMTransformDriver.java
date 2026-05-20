@@ -35,7 +35,7 @@ public class LLMTransformDriver extends ITransformDriver {
         
         LLMNode.LLMNodeBuilder builder = LLMNode.builder()
                 .modelProvider(modelProvider)
-                .pluginName(MetaConstants.CommonConstant.TRANSFORM_LLM)
+                .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_NAME)
                 .model(model)
                 .prompt(llmConfig.get("prompt"))
                 .openaiApiPath((String) commonSettings.get("openai.api_path"))

@@ -9,7 +9,8 @@ public class MessageHubConstants {
     public static final String GLOBAL_PREFIX = "MESSAGEHUB";
     public static final String GLOBAL_COMMON_GROUP = "datalinkx";
 
-    public static final String JOB_PROGRESS_TOPIC = "JOB_PROGRESS";
+    public static final String JOB_PROGRESS_TOPIC = "BATCH_JOB_PROGRESS";
+    public static final String COMPUTE_JOB_PROGRESS_TOPIC = "COMPUTE_JOB_PROGRESS";
     public static final String JOB_ALARM_PUSH = "JOB_ALARM_PUSH";
     public static final String IN_SITE_MESSAGE_PUSH = "IN_SITE_MESSAGE_PUSH";
 

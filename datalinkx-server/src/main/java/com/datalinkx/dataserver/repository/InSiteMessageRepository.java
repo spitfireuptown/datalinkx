@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface InSiteMessageRepository extends CRUDRepository<InSiteMessageBean, Long> {
     Optional<InSiteMessageBean> findById(Long id);
 
-    @Query("select a from InSiteMessageBean a where a.userId = :userId AND a.isDel = 0")
+    @Query("select a from InSiteMessageBean a where a.userId = :userId AND a.isDel = 0 order by a.ctime desc")
     Page<InSiteMessageBean> pageQuery(Pageable pageable, String userId);
     List<InSiteMessageBean> findByUserIdAndIsDel(String userId, Integer isDel);
     List<InSiteMessageBean> findByUserIdAndReadAndIsDel(String userId, Boolean read, Integer isDel);

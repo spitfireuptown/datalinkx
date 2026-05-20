@@ -62,6 +62,7 @@ public final class MetaConstants {
         public static final String SEATUNNEL_JOB_FAILED = "FAILED";
         public static final String SEATUNNEL_SUBMIT_JOB_ERROR_STATUS = "fail";
         public static final String SSE_JOB_STATUS = "jobList";
+        public static final String SSE_COMPUTE_JOB_STATUS = "computeJobList";
         public static final String SSE_COPILOT = "datalinkx_copilot";
         public static Map<Integer, String> JOB_STATUS_TO_DB_NAME_MAP = new HashMap<Integer, String>() {{
             put(MetaConstants.JobStatus.JOB_STATUS_ERROR, "任务失败");
@@ -85,12 +86,15 @@ public final class MetaConstants {
         public static final String RESULT_TABLE = "result_table";
         public static final String LLM_OUTPUT_TABLE = "llm_output";
         public static final String SQL_OUTPUT_TABLE = "sql_output";
+        public static final String DYNAMIC_COMPILE_OUTPUT_TABLE = "dynamic_compile_output";
         public static final String TRANSFORM_START = "custom-start-node";
         public static final String TRANSFORM_END = "custom-end-node";
         public static final String TRANSFORM_SQL = "sql";
         public static final String TRANSFORM_LLM = "llm";
         public static final String TRANSFORM_DYNAMIC_COMPILE = "dynamic_compile";
+        public static final String TRANSFORM_DYNAMIC_COMPILE_NAME = "DynamicCompile";
         public static final String TRANSFORM_DYNAMIC_COMPILE_LANGUAGE = "JAVA";
+        public static final String TRANSFORM_DYNAMIC_COMPILE_PATTERN = "SOURCE_CODE";
         public static final String KEY_RESTORE_COLUMN_INDEX = "restoreColumnIndex";
         public static final String KEY_KAFKA_READ_INDEX = "kafkaReadMode";
         public static final String KEY_CHECKPOINT_INTERVAL = "checkpoint_interval";
@@ -106,7 +110,7 @@ public final class MetaConstants {
         public static final Integer ALARM_FAIL_STATUS = 1;
         // 成功才推送
         public static final Integer ALARM_SUCCESS_STATUS = 2;
-        public static final String GLOBAL_ALARM_SUBJECT = "DatalinkX Pro系统告警";
+        public static final String GLOBAL_ALARM_SUBJECT = "DatalinkX 系统告警";
         public static final String JOB_STATUS_PUSH_TITLE = "任务执行状态推送";
         public static final String FLINKX_ENGINE = "flinkx";
         public static final String SEATUNNEL_ENGINE = "seatunnel";

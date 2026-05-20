@@ -44,12 +44,14 @@ export default {
       columns: [
         {
           title: 'job_id',
-          width: '10%',
           dataIndex: 'job_id'
         },
         {
+          title: '任务名称',
+          dataIndex: 'job_name'
+        },
+        {
           title: '执行日志',
-          width: '10%',
           dataIndex: 'error_msg',
           ellipsis: {
             showTitle: false
@@ -75,25 +77,21 @@ export default {
         },
         {
           title: '开始时间',
-          width: '10%',
           dataIndex: 'start_time',
           sorter: true
         },
         {
           title: '执行耗时s',
-          width: '10%',
           dataIndex: 'cost_time',
           sorter: true
         },
         {
           title: '任务状态',
-          width: '10%',
           dataIndex: 'status',
           scopedSlots: { customRender: 'status' }
         },
         {
           title: '新增条数',
-          width: '10%',
           dataIndex: 'append_count',
           sorter: true
         }

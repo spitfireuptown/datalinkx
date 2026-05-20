@@ -99,4 +99,7 @@ public class ClickhouseWriter extends JdbcWriter {
     @EngineField({EngineField.Engine.SEATUNNEL})
     @JsonProperty("support_upsert")
     private String supportUpsert;
+
+    @EngineField({EngineField.Engine.SEATUNNEL})
+    private String query;
 }

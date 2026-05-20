@@ -191,7 +191,7 @@ public class DataTransferAction extends AbstractDataTransferAction<DatalinkXJobD
         unitParam.setWriteRecords(writeRecords.get() - errorRecords.get());
 
         // 实时推送流转进度
-        super.sendJobProgress(unitParam.getJobId(), unitParam.getReadRecords(), unitParam.getWriteRecords());
+        super.sendJobProgress(unitParam.getJobId(), MessageHubConstants.JOB_PROGRESS_TOPIC, unitParam.getReadRecords(), unitParam.getWriteRecords());
     }
 
     @Override

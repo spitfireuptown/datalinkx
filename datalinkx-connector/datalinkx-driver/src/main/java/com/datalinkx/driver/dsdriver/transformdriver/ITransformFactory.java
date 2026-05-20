@@ -15,7 +15,7 @@ public final class ITransformFactory {
 
     }
 
-    private static final String PACKAGE_PREFIX = "com.datalinkx.driver.dsdriver.transformdriver.";
+    private static final String PACKAGE_PREFIX = "com.datalinkx.driver.dsdriver.transformdriver.transform.";
 
 
     public static ITransformDriver getComputeDriver(String type) throws Exception {

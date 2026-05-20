@@ -292,9 +292,13 @@ public class JobServiceImpl implements JobService {
 		PageRequest pageRequest = PageRequest.of(jobLogPageForm.getPageNo() - 1, jobLogPageForm.getPageSize());
 		Page<JobLogBean> jobLogBeans = jobLogRepository.pageQuery(pageRequest, jobLogPageForm.getJobId());
 
+		List<String> jobIds = jobLogBeans.getContent().stream().map(JobLogBean::getJobId).distinct().collect(Collectors.toList());
+		Map<String, String> jobId2Name = jobRepository.findByJobIdIn(jobIds).stream().collect(Collectors.toMap(JobBean::getJobId, JobBean::getName));
+
 		List<JobVo.JobLogPageVo> logPageVos = jobLogBeans.getContent().stream().map(jobLogBean -> {
 			JobVo.JobLogPageVo logPageVo = new JobVo.JobLogPageVo();
 			logPageVo.setJobId(jobLogBean.getJobId());
+			logPageVo.setJobName(jobId2Name.get(jobLogBean.getJobId()));
 			logPageVo.setStatus(jobLogBean.getStatus());
 			logPageVo.setErrorMsg(jobLogBean.getErrorMsg());
 			logPageVo.setCostTime(jobLogBean.getCostTime());

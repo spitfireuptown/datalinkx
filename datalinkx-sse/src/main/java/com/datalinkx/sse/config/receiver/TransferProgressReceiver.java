@@ -36,4 +36,12 @@ public class TransferProgressReceiver {
     public void pushJobStatusLoadBalance3(String jobStatusMsg) {
         SseEmitterServer.sendMessage(MetaConstants.JobStatus.SSE_JOB_STATUS, jobStatusMsg);
     }
+
+    @MessageHub(
+        topic = MessageHubConstants.COMPUTE_JOB_PROGRESS_TOPIC,
+        group = MessageHubConstants.GLOBAL_COMMON_GROUP,
+        type = MessageHubConstants.REDIS_STREAM_TYPE)
+    public void pushComputeJobStatusLoadBalance(String jobStatusMsg) {
+        SseEmitterServer.sendMessage(MetaConstants.JobStatus.SSE_COMPUTE_JOB_STATUS, jobStatusMsg);
+    }
 }

@@ -89,7 +89,8 @@ public class DatalinkXJobDetail {
         String catalog;
         String schema;
         String tableName;
-        List<String> columns;
+        List<String> toColumns;
+        List<String> fromColumns;
         String connectId;
         Integer batchSize;
         String type;

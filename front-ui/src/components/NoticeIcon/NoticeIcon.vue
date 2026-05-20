@@ -11,16 +11,18 @@
   >
     <template slot="content">
       <a-spin :spinning="loading" tip="加载中...">
-        <div class="notice-content">
-          <a-list v-if="messages.length > 0" itemLayout="horizontal" :dataSource="messages">
-            <a-list-item slot="renderItem" slot-scope="item" @click="markAsRead(item.id)" class="notice-item" :class="{ 'unread': !item.read }">
-              <a-list-item-meta :title="item.title" :description="item.time">
-                <a-avatar style="background-color: white" slot="avatar" :src="item.avatar"/>
-              </a-list-item-meta>
-              <a-tag v-if="!item.read" color="blue">未读</a-tag>
-            </a-list-item>
-          </a-list>
-          <div v-else class="empty-notice">暂无消息</div>
+        <div class="notice-container">
+          <div class="notice-content">
+            <a-list v-if="messages.length > 0" itemLayout="horizontal" :dataSource="messages">
+              <a-list-item slot="renderItem" slot-scope="item" @click="markAsRead(item.id)" class="notice-item" :class="{ 'unread': !item.read }">
+                <a-list-item-meta :title="item.title" :description="item.time">
+                  <a-avatar style="background-color: white" slot="avatar" :src="item.avatar"/>
+                </a-list-item-meta>
+                <a-tag v-if="!item.read" color="blue">未读</a-tag>
+              </a-list-item>
+            </a-list>
+            <div v-else class="empty-notice">暂无消息</div>
+          </div>
           <div v-if="messages.length > 0" class="notice-footer">
             <a @click="markAllAsRead">全部标记为已读</a>
           </div>
@@ -227,15 +229,21 @@ export default {
     text-align: center;
     color: #999;
   }
-  .notice-content {
+  .notice-container {
+    display: flex;
+    flex-direction: column;
     max-height: 300px;
+    min-height: 100px;
+  }
+  .notice-content {
+    flex: 1;
     overflow-y: auto;
   }
   .notice-footer {
     padding: 10px;
     text-align: right;
     border-top: 1px solid #f0f0f0;
-    margin-top: 10px;
+    background-color: #fff;
   }
   .notice-footer a {
     font-size: 12px;

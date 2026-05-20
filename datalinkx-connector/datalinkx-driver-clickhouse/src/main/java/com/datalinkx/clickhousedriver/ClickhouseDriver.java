@@ -89,6 +89,7 @@ public class ClickhouseDriver extends JdbcDriver<JdbcSetupInfo, ClickhouseReader
                 .table(writer.getTableName())
                 .username(this.jdbcSetupInfo.getUid())
                 .password(this.jdbcSetupInfo.getPwd())
+                .query(super.transferSinkSQL(writer))
                 .pluginName(this.PLUGIN_NAME)
                 .bulkSize("20000")
                 .splitMode("false")

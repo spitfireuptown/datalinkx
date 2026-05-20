@@ -2,6 +2,7 @@ package com.datalinkx.rpc.client.seatunnel.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,13 +32,41 @@ public class JobOverviewResp {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Metrics {
-        private String SourceReceivedCount;
-        private String SourceReceivedQPS;
-        private String SourceReceivedBytes;
-        private String SourceReceivedBytesPerSeconds;
-        private String SinkWriteCount;
-        private String SinkWriteQPS;
-        private String SinkWriteBytes;
-        private String SinkWriteBytesPerSeconds;
+        @JsonProperty("SourceReceivedCount")
+        private Object sourceReceivedCount;
+        @JsonProperty("SourceReceivedQPS")
+        private Object sourceReceivedQPS;
+        @JsonProperty("SourceReceivedBytes")
+        private Object sourceReceivedBytes;
+        @JsonProperty("SourceReceivedBytesPerSeconds")
+        private Object sourceReceivedBytesPerSeconds;
+        @JsonProperty("SinkWriteCount")
+        private Object sinkWriteCount;
+        @JsonProperty("SinkWriteQPS")
+        private Object sinkWriteQPS;
+        @JsonProperty("SinkWriteBytes")
+        private Object sinkWriteBytes;
+        @JsonProperty("SinkWriteBytesPerSeconds")
+        private Object sinkWriteBytesPerSeconds;
+        @JsonProperty("TableSourceReceivedCount")
+        private Object tableSourceReceivedCount;
+        @JsonProperty("TableSourceReceivedQPS")
+        private Object tableSourceReceivedQPS;
+        @JsonProperty("TableSourceReceivedBytes")
+        private Object tableSourceReceivedBytes;
+        @JsonProperty("TableSourceReceivedBytesPerSeconds")
+        private Object tableSourceReceivedBytesPerSeconds;
+        @JsonProperty("TableSinkWriteCount")
+        private Object tableSinkWriteCount;
+        @JsonProperty("TableSinkWriteQPS")
+        private Object tableSinkWriteQPS;
+        @JsonProperty("TableSinkWriteBytes")
+        private Object tableSinkWriteBytes;
+        @JsonProperty("TableSinkWriteBytesPerSeconds")
+        private Object tableSinkWriteBytesPerSeconds;
+        @JsonProperty("SinkReceiveQPS")
+        private Object sinkReceiveQPS;
+        @JsonProperty("SinkReceiveBytes")
+        private Object sinkReceiveBytes;
     }
 }

@@ -155,7 +155,7 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
             }
         }
         // 如果是增量模式,必须要把增量字段进行流转,根据下标一一对应,找到目标库的增量字段
-        String writerIncreaseField = writer.getColumns().get(increaseFieldIndex);
+        String writerIncreaseField = writer.getToColumns().get(increaseFieldIndex);
         return this.retrieveMax(writerIncreaseField, writer.getCatalog(), writer.getSchema(), writer.getTableName());
     }
 
@@ -319,7 +319,7 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
                         .jdbcUrl(jdbcUrl())
                         .table(Collections.singletonList(writer.getTableName()))
                         .build()))
-                .column(writer.getColumns())
+                .column(writer.getToColumns())
                 .insertSqlMode("copy")
                 .writeMode("insert")
                 .batchSize(writer.getBatchSize())
@@ -402,13 +402,13 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
     @Override
     public String transferSinkSQL(DatalinkXJobDetail.Writer writer) {
         StringBuilder abstractQuery = new StringBuilder();
-        for (int i = 0; i < writer.getInsertFields().split(",").length; i++) {
+        for (int i = 0; i < writer.getFromColumns().size(); i++) {
             if (i == 0) {
 
-                abstractQuery.append("?");
+                abstractQuery.append(String.format(":%s", writer.getFromColumns().get(i)));
             } else {
 
-                abstractQuery.append(",?");
+                abstractQuery.append(String.format(",:%s", writer.getFromColumns().get(i)));
             }
         }
 

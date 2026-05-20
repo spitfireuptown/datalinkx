@@ -73,6 +73,10 @@ public class JobVo {
 		@JsonProperty("job_id")
 		private String jobId;
 
+		@ApiModelProperty(value = "任务名称")
+		@JsonProperty("job_name")
+		private String jobName;
+
 		@JsonProperty("error_msg")
 		private String errorMsg;
 
