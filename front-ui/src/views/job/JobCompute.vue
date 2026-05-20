@@ -319,6 +319,34 @@ export default {
   },
 
   methods: {
+    // ========== 工具方法 ==========
+
+    /**
+     * 转义JSON字符串中的特殊字符
+     */
+    escapeForJson (input) {
+      if (!input) {
+        return input
+      }
+      return input.replace(/\\/g, '\\\\')
+                  .replace(/"/g, '\\"')
+                  .replace(/\n/g, '\\n')
+                  .replace(/\r/g, '\\r')
+    },
+
+    /**
+     * 反转义JSON字符串中的特殊字符
+     */
+    unescapeFromJson (input) {
+      if (!input) {
+        return input
+      }
+      return input.replace(/\\n/g, '\n')
+                  .replace(/\\r/g, '\r')
+                  .replace(/\\"/g, '"')
+                  .replace(/\\\\/g, '\\')
+    },
+
     // ========== 初始化方法 ==========
 
     /**
@@ -585,11 +613,41 @@ export default {
         }
       })
 
+      // 鼠标进入边
+      this.graph.on('edge:mouseenter', ({ cell }) => {
+        if (cell.isEdge()) {
+          cell.addTools([{ name: 'button-remove', args: { distance: -40 } }])
+        }
+      })
+
+      // 鼠标离开边
+      this.graph.on('edge:mouseleave', ({ cell }) => {
+        if (cell.hasTool('button-remove')) {
+          cell.removeTool('button-remove')
+        }
+      })
+
       // 节点点击
       this.graph.on('node:click', ({ node, cell }) => {
         this.currentNodeId = node.id
         const nodeShape = cell.shape
         this.openDrawerByNodeType(nodeShape, cell)
+      })
+
+      // 元素被选中（框选或点击）
+      this.graph.on('cell:selected', ({ cell }) => {
+        if (cell.isNode()) {
+          cell.addTools([{ name: 'button-remove', args: { x: 0, y: 0, offset: { x: 10, y: 10 } } }])
+        } else if (cell.isEdge()) {
+          cell.addTools([{ name: 'button-remove', args: { distance: -40 } }])
+        }
+      })
+
+      // 元素取消选中
+      this.graph.on('cell:unselected', ({ cell }) => {
+        if (cell.hasTool('button-remove')) {
+          cell.removeTool('button-remove')
+        }
       })
 
       // 空白点击
@@ -1124,8 +1182,8 @@ export default {
         zoomOut: () => this.graph.zoom(-GRAPH_CONFIG.ZOOM_STEP * 2),
         centerContent: () => this.graph.centerContent(),
         view: this.exportJson,
-        select: this.changeRubberband,
-        move: this.changePann,
+        select: () => this.changeRubberband('select'),
+        move: () => this.changePann('move'),
         exit: this.handleExit
       }
 

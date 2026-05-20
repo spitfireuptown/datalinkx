@@ -14,7 +14,7 @@ public class DynamicCompileTransformDriver extends ITransformDriver {
     @Override
     public TransformNode transferInfo(Map<String, Object> commonSettings, String meta) {
         return DynamicCompileNode.builder()
-                .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE)
+                .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_NAME)
                 .sourceCode(meta)
                 .compileLanguage(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_LANGUAGE)
                 .compilePattern(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_PATTERN)

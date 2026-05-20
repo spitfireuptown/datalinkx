@@ -189,7 +189,8 @@ public class StreamDataTransferAction extends AbstractDataTransferAction<Datalin
                     .connectId(info.getSyncUnit().getWriter().getConnectId())
                     .tableName(info.getSyncUnit().getWriter().getTableName())
                     .schema(info.getSyncUnit().getWriter().getSchema())
-                    .columns(info.getSyncUnit().getWriter().getToColumns())
+                    .toColumns(info.getSyncUnit().getWriter().getToColumns())
+                    .fromColumns(info.getSyncUnit().getWriter().getFromColumns())
                     .batchSize(info.getSyncUnit().getWriter().getBatchSize())
                     // 如果是binlog2jdbc的writemode应为updte
                     .writeMode("update")

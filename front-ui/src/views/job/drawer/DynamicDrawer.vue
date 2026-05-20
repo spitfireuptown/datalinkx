@@ -9,7 +9,9 @@
     width="500"
   >
     <div class="dynamic-hint">
-      <p>动态编译算子允许您编写自定义代码进行处理</p>
+      <p>
+      动态编译算子允许您编写自定义代码进行处理。<a href="https://github.com/apache/seatunnel/tree/dev/seatunnel-e2e/seatunnel-transforms-v2-e2e/seatunnel-transforms-v2-e2e-part-2/src/test/resources/dynamic_compile/conf" target="_blank">更多复杂例子参考</a>
+      </p>
     </div>
 
     <div class="dynamic-content">
