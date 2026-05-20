@@ -60,7 +60,10 @@ public class TransformDataTransferAction extends AbstractDataTransferAction<Data
     protected void end(SeatunnelActionGraph unit, int status, String errmsg) {
         log.info(String.format("transform job jobid: %s, end to transfer", unit.getJobId()));
         datalinkXServerClient.updateJobStatus(JobStateForm.builder().jobId(unit.getJobId())
-                .jobStatus(status).endTime(new Date().getTime())
+                .jobStatus(status)
+                .endTime(new Date().getTime())
+                .readCount(unit.getReadRecords())
+                .writeCount(unit.getWriteRecords())
                 .errmsg(errmsg)
                 .build());
 

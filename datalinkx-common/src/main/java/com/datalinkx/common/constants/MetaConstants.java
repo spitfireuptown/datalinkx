@@ -91,6 +91,7 @@ public final class MetaConstants {
         public static final String TRANSFORM_END = "custom-end-node";
         public static final String TRANSFORM_SQL = "sql";
         public static final String TRANSFORM_LLM = "llm";
+        public static final String TRANSFORM_EDGE = "edge";
         public static final String TRANSFORM_DYNAMIC_COMPILE = "dynamic_compile";
         public static final String TRANSFORM_DYNAMIC_COMPILE_NAME = "DynamicCompile";
         public static final String TRANSFORM_DYNAMIC_COMPILE_LANGUAGE = "JAVA";

@@ -5,10 +5,11 @@ import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.exception.DatalinkXServerException;
 import com.datalinkx.common.result.DatalinkXJobDetail;
 import com.datalinkx.common.result.StatusCode;
-import com.datalinkx.common.utils.IdUtils;
 import com.datalinkx.common.utils.JsonUtils;
-import com.datalinkx.dataserver.bean.domain.*;
-import com.datalinkx.dataserver.bean.dto.InSiteMessageDto;
+import com.datalinkx.dataserver.bean.domain.DsBean;
+import com.datalinkx.dataserver.bean.domain.JobBean;
+import com.datalinkx.dataserver.bean.domain.JobLogBean;
+import com.datalinkx.dataserver.bean.domain.JobRelationBean;
 import com.datalinkx.dataserver.bean.dto.JobDto;
 import com.datalinkx.dataserver.client.JobClientApi;
 import com.datalinkx.dataserver.config.properties.CommonProperties;
@@ -24,11 +25,10 @@ import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformFactory;
 import com.datalinkx.messagehub.bean.form.ProducerAdapterForm;
 import com.datalinkx.messagehub.service.MessageHubService;
-import com.datalinkx.sse.config.SseEmitterServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,10 +37,6 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Resource;
 import java.io.File;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,6 +47,7 @@ import static com.datalinkx.common.constants.MetaConstants.JobStatus.JOB_STATUS_
  * @author: uptown
  * @date: 2024/4/25 22:36
  */
+@Slf4j
 @Service
 public class DtsJobServiceImpl implements DtsJobService {
     @Autowired
@@ -244,10 +241,14 @@ public class DtsJobServiceImpl implements DtsJobService {
         for (JsonNode node : jsonNode.get("cells")) {
 
             String transformType = node.get("shape").asText();
-            if (MetaConstants.CommonConstant.TRANSFORM_START.equals(transformType)
-                    || MetaConstants.CommonConstant.TRANSFORM_END.equals(transformType)) {
+            if (Arrays.asList(
+                    MetaConstants.CommonConstant.TRANSFORM_EDGE,
+                    MetaConstants.CommonConstant.TRANSFORM_START,
+                    MetaConstants.CommonConstant.TRANSFORM_END
+            ).contains(transformType)) {
                 continue;
             }
+
             if (MetaConstants.CommonConstant.TRANSFORM_SQL.equals(transformType)) {
                 containSQLNode = true;
             }
@@ -266,13 +267,16 @@ public class DtsJobServiceImpl implements DtsJobService {
                                     .build()
                     );
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.error(transformType + " 算子反射异常", e);
+            }
         }
 
         compute.setTransforms(transforms);
 
-        // 如果计算过程中存在SQL节点，把reader中的queryFields改成*防止SQL中引用了未映射字段导致报错
-        if (containSQLNode) {
+        // 1. 如果计算过程中存在SQL节点，把reader中的queryFields改成*防止SQL中引用了未映射字段导致报错
+        // 2. 如果reader的columns为空，则输出节点是以中间算子的结果作为映射，reader取*即可
+        if (containSQLNode || ObjectUtils.isEmpty(syncUnit.getReader().getQueryFields())) {
             syncUnit.getReader().setQueryFields("*");
         }
 
