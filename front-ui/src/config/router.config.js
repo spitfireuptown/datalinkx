@@ -127,6 +127,12 @@ export const asyncRouterMap = [
         ]
       },
       {
+        path: '/system/param',
+        name: 'taskParam',
+        component: () => import('@/views/system/SystemParamList.vue'),
+        meta: { title: 'menu.taskParam', keepAlive: true, icon: task }
+      },
+      {
         path: '/system/monitor',
         name: 'systemMonitor',
         component: () => import('@/views/system/systemMonitor.vue'),

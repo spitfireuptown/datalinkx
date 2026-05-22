@@ -160,7 +160,6 @@
           <div class="header-item">来源字段</div>
           <div class="header-icon"></div>
           <div class="header-item">目标字段</div>
-          <div class="header-action">操作</div>
         </div>
         <div v-for="(mapping, index) in mappings" :key="index" class="mapping-row">
           <div class="mapping-field">

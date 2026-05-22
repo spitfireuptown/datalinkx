@@ -38,13 +38,13 @@
             <a-tabs v-model="activeKey">
               <a-tab-pane key="1" tab="Params">
                 <a-table :columns="columns" :dataSource="paramData" :pagination="false" bordered>
-                  <template v-for="col in ['index', 'key', 'value']" :slot="col" slot-scope="text, record, index">
+                  <template v-for="col in ['index', 'fieldKey', 'value']" :slot="col" slot-scope="text, record, index">
                     <div :key="col">
                       <a-input
                         v-if="record.editable"
                         style="margin: -5px 0"
                         :value="text"
-                        @change="e => handleChanged('param', e.target.value, record.index, col,0)"
+                        @change="e => handleChanged('param', e.target.value, record.index, col)"
                       />
                       <template v-else>{{ text }}</template>
                     </div>
@@ -71,13 +71,13 @@
               </a-tab-pane>
               <a-tab-pane key="2" tab="Headers" force-render>
                 <a-table :columns="columns" :dataSource="headerData" :pagination="false" bordered>
-                  <template v-for="col in ['index', 'key', 'value']" :slot="col" slot-scope="text, record, index">
+                  <template v-for="col in ['index', 'fieldKey', 'value']" :slot="col" slot-scope="text, record, index">
                     <div :key="col">
                       <a-input
                         v-if="record.editable"
                         style="margin: -5px 0"
                         :value="text"
-                        @change="e => handleChanged('header', e.target.value, record.index, col,0)"
+                        @change="e => handleChanged('header', e.target.value, record.index, col)"
                       />
                       <template v-else>{{ text }}</template>
                     </div>
@@ -113,13 +113,13 @@
                       <p v-if="body_type=='none'">This request does not have a body</p>
                       <div v-else-if="body_type=='form-data' || body_type=='x-www-form-urlencoded'">
                         <a-table :columns="columns" :dataSource="data" :pagination="false" bordered>
-                          <template v-for="col in ['index', 'key', 'value']" :slot="col" slot-scope="text, record, index">
+                          <template v-for="col in ['index', 'fieldKey', 'value']" :slot="col" slot-scope="text, record, index">
                             <div :key="col">
                               <a-input
                                 v-if="record.editable"
                                 style="margin: -5px 0"
                                 :value="text"
-                                @change="e => handleChanged('body', e.target.value, record.index, col,0)"
+                                @change="e => handleChanged('body', e.target.value, record.index, col)"
                               />
                               <template v-else>{{ text }}</template>
                             </div>
@@ -207,9 +207,10 @@
     //   width: '25%'
     // },
     {
+      key: 'fieldKey',
       title: 'key',
-      dataIndex: 'key',
-      scopedSlots: { customRender: 'key' },
+      dataIndex: 'fieldKey',
+      scopedSlots: { customRender: 'fieldKey' },
       width: '25%'
     },
     {
@@ -387,27 +388,21 @@
         }
       },
       confirm () {},
-      handleChanged (type, value, key, column, index) {
+      handleChanged (type, value, key, column) {
         if (type === 'param') {
-          const newData = [...this.paramData]
-          const target = newData.filter(item => key === item.index)[index]
+          const target = this.paramData.find(item => key === item.index)
           if (target) {
             target[column] = value
-            this.paramData = newData
           }
         } else if (type === 'header') {
-          const newData = [...this.headerData]
-          const target = newData.filter(item => key === item.index)[index]
+          const target = this.headerData.find(item => key === item.index)
           if (target) {
             target[column] = value
-            this.headerData = newData
           }
         } else {
-          const newData = [...this.data]
-          const target = newData.filter(item => key === item.index)[index]
+          const target = this.data.find(item => key === item.index)
           if (target) {
             target[column] = value
-            this.data = newData
           }
         }
       },
@@ -510,21 +505,21 @@
         if (key === 'param') {
           this.paramData.push({
             index: this.paramCount,
-            key: '',
+            fieldKey: '',
             value: ''
           })
           this.paramCount++
         } else if (key === 'header') {
           this.headerData.push({
             index: this.headerCount,
-            key: '',
+            fieldKey: '',
             value: ''
           })
           this.headerCount++
         } else {
           this.data.push({
             index: this.bodyCount,
-            key: '',
+            fieldKey: '',
             value: ''
           })
           this.bodyCount++

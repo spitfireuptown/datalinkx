@@ -147,3 +147,18 @@ create user 'canal'@'%' identified by 'Canal@123456';
 -- 授权 *.*表示所有库
 grant SELECT, REPLICATION SLAVE, REPLICATION CLIENT on *.* to 'canal'@'%' identified by 'Canal@123456';
 GRANT ALL PRIVILEGES ON *.* TO 'canal'@'%' IDENTIFIED BY 'Canal@123456' WITH GRANT OPTION
+
+-- 系统参数
+CREATE TABLE `SYSTEM_PARAM` (
+   `id` int unsigned NOT NULL AUTO_INCREMENT,
+   `param_key` bigint DEFAULT NULL COMMENT '参数key',
+   `param_value` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '参数值',
+   `param_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '参数描述',
+   `param_datasource` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '参数作用数据源',
+   `param_scope` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '参数作用域',
+   `enable` boolean DEFAULT FALSE COMMENT '是否启用',
+   `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+   `utime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+   `is_del` int DEFAULT '0' COMMENT '是否删除',
+   PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='系统参数';

@@ -19,6 +19,7 @@ export default {
   'menu.alarmComponentConfig': '告警组件配置',
   'menu.alarmRuleConfig': '告警规则配置',
   'menu.systemMonitor': '系统监控',
+  'menu.taskParam': '任务参数',
 
   // 'menu.dashboard': '仪表盘',
   // 'menu.dashboard.analysis': '分析页',
