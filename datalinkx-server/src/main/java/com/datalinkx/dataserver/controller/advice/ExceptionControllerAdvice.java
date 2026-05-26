@@ -83,11 +83,4 @@ public class ExceptionControllerAdvice {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .body(result);
     }
-
-
-    @ResponseBody
-    @ExceptionHandler(value = {Exception.class, Error.class})
-    public WebResult<?> handleUncatchException(Throwable exception) {
-        return WebResult.fail(exception, null);
-    }
 }

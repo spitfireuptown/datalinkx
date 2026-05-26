@@ -50,10 +50,12 @@
       :model-provider="llmConfig.modelProvider"
       :model="llmConfig.model"
       :api-key="llmConfig.apiKey"
+      :api-path="llmConfig.apiPath"
       :prompt="llmConfig.prompt"
       @model-provider-change="handleModelProviderChange"
       @model-change="handleModelChange"
       @api-key-change="handleApiKeyChange"
+      @api-path-change="handleApiPathChange"
       @prompt-change="handlePromptChange"
       @visible-change="afterVisibleChange"
       @close="handleDrawerClose('llm')"
@@ -221,6 +223,7 @@ export default {
       modelProvider: '',
       model: '',
       apiKey: '',
+      apiPath: '',
       prompt: ''
     }
 
@@ -874,6 +877,13 @@ export default {
     },
 
     /**
+     * API Path变更
+     */
+    handleApiPathChange (value) {
+      this.llmConfig.apiPath = value
+    },
+
+    /**
      * Prompt变更
      */
     handlePromptChange (value) {
@@ -1098,6 +1108,7 @@ export default {
         nodeData.modelProvider = this.llmConfig.modelProvider
         nodeData.model = this.llmConfig.model
         nodeData.apiKey = this.llmConfig.apiKey
+        nodeData.apiPath = this.llmConfig.apiPath
         nodeData.prompt = this.llmConfig.prompt
       }
 
@@ -1333,6 +1344,7 @@ export default {
             this.llmConfig.modelProvider = cell.data?.modelProvider || ''
             this.llmConfig.model = cell.data?.model || ''
             this.llmConfig.apiKey = cell.data?.apiKey || ''
+            this.llmConfig.apiPath = cell.data?.apiPath || ''
             this.llmConfig.prompt = cell.data?.prompt || ''
           }
           if (cell.shape === NODE_SHAPE.DYNAMIC) {
@@ -1359,6 +1371,7 @@ export default {
       this.llmConfig.modelProvider = ''
       this.llmConfig.model = ''
       this.llmConfig.apiKey = ''
+      this.llmConfig.apiPath = ''
       this.llmConfig.prompt = ''
       this.dynamicConfig.sourceCode = ''
       this.dynamicConfig.outputFields = []

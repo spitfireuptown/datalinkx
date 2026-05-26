@@ -5,12 +5,11 @@ import com.datalinkx.dataserver.bean.vo.JobVo;
 import com.datalinkx.dataserver.bean.vo.PageVo;
 import com.datalinkx.dataserver.controller.form.JobForm;
 import com.datalinkx.dataserver.service.DtsJobService;
-import com.datalinkx.dataserver.bean.vo.DynamicCodeVo;
-import com.datalinkx.dataserver.service.DynamicCodeService;
+import com.datalinkx.driver.dsdriver.base.meta.TransformNodeMeta;
+import com.datalinkx.dataserver.service.TransformService;
 import com.datalinkx.dataserver.service.impl.JobRelationServiceImpl;
 import com.datalinkx.dataserver.service.impl.JobServiceImpl;
 import io.swagger.annotations.ApiOperation;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,7 @@ public class JobController {
 	private JobRelationServiceImpl jobRelationServiceImpl;
 
 	@Autowired
-	private DynamicCodeService dynamicCodeService;
+	private TransformService transformService;
 
 	@ApiOperation("流转任务-创建")
 	@PostMapping("/create")
@@ -56,10 +55,10 @@ public class JobController {
 	}
 
 	@ApiOperation("流转任务-列表查询")
-	@GetMapping("/page")
-	public PageVo<List<JobVo.JobPageVo>> page(JobForm.JobPageForm form) {
-		return jobServiceImpl.page(form);
-	}
+    @GetMapping("/page")
+    public PageVo<List<JobVo.JobPageVo>> page(JobForm.JobPageForm form) {
+        return jobServiceImpl.page(form);
+    }
 
 	@ApiOperation("流转任务-列表查询")
 	@GetMapping("/list")
@@ -115,24 +114,18 @@ public class JobController {
 
 
 	@ApiOperation("任务血缘-详情查询")
-	@RequestMapping("/relation_blood/info/{jobId}")
-	public JobVo.JobRelationBloodVo relationPage(@PathVariable String jobId) {
-		return jobRelationServiceImpl.relationBloodInfo(jobId);
-	}
+    @RequestMapping("/relation_blood/info/{jobId}")
+    public JobVo.JobRelationBloodVo relationPage(@PathVariable String jobId) {
+        log.info("收到任务血缘查询请求，jobId: {}", jobId);
+        JobVo.JobRelationBloodVo result = jobRelationServiceImpl.relationBloodInfo(jobId);
+        log.info("任务血缘查询请求完成，jobId: {}", jobId);
+        return result;
+    }
 
 	@ApiOperation("校验动态编译源代码")
-	@PostMapping("/validate_dynamic_code")
-	public WebResult<DynamicCodeVo.ValidateResult> validateDynamicCode(@RequestBody ValidateForm form) {
-		log.info("开始校验动态编译源代码");
-		DynamicCodeVo.ValidateResult result = dynamicCodeService.validateAndParse(form.getSource_code());
-		return WebResult.of(result);
+	@PostMapping("/validate_transform_meta")
+	public WebResult<TransformNodeMeta.ValidateResult> validateTransformMeta(@RequestBody JobForm.TransformValidateForm form) {
+		return WebResult.of(transformService.validate(form));
 	}
 
-	/**
-	 * 校验请求表单
-	 */
-	@Data
-	public static class ValidateForm {
-		private String source_code;
-	}
 }

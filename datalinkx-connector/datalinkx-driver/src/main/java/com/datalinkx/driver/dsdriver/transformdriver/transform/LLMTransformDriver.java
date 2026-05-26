@@ -2,6 +2,8 @@ package com.datalinkx.driver.dsdriver.transformdriver.transform;
 
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.utils.JsonUtils;
+import com.datalinkx.common.utils.ObjectUtils;
+import com.datalinkx.driver.dsdriver.base.meta.TransformNodeMeta;
 import com.datalinkx.driver.dsdriver.base.transform.LLMNode;
 import com.datalinkx.driver.dsdriver.base.transform.TransformNode;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
@@ -27,6 +29,7 @@ public class LLMTransformDriver extends ITransformDriver {
         String modelProvider = llmConfig.getOrDefault("modelProvider", "OPENAI");
         String model = llmConfig.getOrDefault("model", (String) commonSettings.get("model"));
         String apiKey = llmConfig.get("apiKey");
+        String apiPath = llmConfig.get("apiPath");
         
         String innerPrompt = (String) commonSettings.getOrDefault("inner_prompt", "");
         String prompt = String.format("%s \n %s", innerPrompt, llmConfig.get("prompt"));
@@ -38,22 +41,24 @@ public class LLMTransformDriver extends ITransformDriver {
                 .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_NAME)
                 .model(model)
                 .prompt(llmConfig.get("prompt"))
-                .openaiApiPath((String) commonSettings.get("openai.api_path"))
-                .customConfig(
-                        LLMNode.CustomConfig.builder()
-                                .customResponseParse((String) commonSettings.get("response_parse"))
-                                .customRequestBody(
-                                        LLMNode.customRequestBody
-                                                .builder()
-                                                .temperature(Double.valueOf((String) commonSettings.getOrDefault("temperature", "0.1")))
-                                                .messages(Collections.singletonList(promptMessage))
-                                                .build()
-                                )
-                                .build()
-                )
                 .sourceTableName(MetaConstants.CommonConstant.SOURCE_TABLE)
                 .resultTableName(MetaConstants.CommonConstant.LLM_OUTPUT_TABLE);
-        
+
+        if ("CUSTOM".equals(modelProvider)) {
+            builder.customConfig(
+                    LLMNode.CustomConfig.builder()
+                            .customResponseParse((String) commonSettings.get("response_parse"))
+                            .customRequestBody(
+                                    LLMNode.customRequestBody
+                                            .builder()
+                                            .temperature(Double.valueOf((String) commonSettings.getOrDefault("temperature", "0.1")))
+                                            .messages(Collections.singletonList(promptMessage))
+                                            .build()
+                            )
+                            .build()
+            ).apiKey((String) commonSettings.get("openai.api_path"));
+        }
+
         if (StringUtils.isNotEmpty(apiKey)) {
             builder.apiKey(apiKey);
         }
@@ -75,13 +80,34 @@ public class LLMTransformDriver extends ITransformDriver {
         if (dataMeta.has("apiKey")) {
             llmConfig.put("apiKey", dataMeta.get("apiKey").asText());
         }
+        if (dataMeta.has("apiPath")) {
+            llmConfig.put("apiPath", dataMeta.get("apiPath").asText());
+        }
         if (dataMeta.has("prompt")) {
             llmConfig.put("prompt", dataMeta.get("prompt").asText());
         }
         
         return JsonUtils.toJson(llmConfig);
     }
-    
+
+    @Override
+    public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
+        JsonNode dataMeta = nodeMeta.get("data");
+        if (dataMeta == null) {
+            throw new Exception("LLM配置数据为空");
+        }
+        
+        if (!dataMeta.has("model") || StringUtils.isEmpty(dataMeta.get("model").asText())) {
+            throw new Exception("模型名称不能为空");
+        }
+        
+        if (!dataMeta.has("apiKey") || StringUtils.isEmpty(dataMeta.get("apiKey").asText())) {
+            throw new Exception("API Key不能为空");
+        }
+        
+        return null;
+    }
+
     private Map<String, String> parseMeta(String meta) {
         if (StringUtils.isEmpty(meta)) {
             Map<String, String> defaultConfig = new HashMap<>();

@@ -142,4 +142,10 @@ public class JobForm {
 		private String key;
 		private String value;
 	}
+
+	@Data
+	public static class TransformValidateForm {
+		private String type;
+		private String graph;
+	}
 }

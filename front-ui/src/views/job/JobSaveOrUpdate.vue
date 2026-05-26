@@ -378,7 +378,6 @@
           const excludeFromDs = ['redis', 'http', 'kafka']
           const excludeToDs = ['http', 'kafka']
           for (var a of record) {
-            // redis数据源暂不支持读
             if (!excludeFromDs.includes(a.type)) {
               this.fromDsList.push({
                 dsId: a.dsId,
@@ -394,8 +393,11 @@
               })
             }
           }
+        }).catch(err => {
+          this.selectloading = false
+          const errData = err.response?.data || {}
+          this.$message.error(errData.errstr || err.message || '查询数据源失败')
         })
-        console.log(this.fromDsList)
         if (type === 'edit') {
           getObj(id).then(res => {
             const record = res.result
@@ -409,7 +411,6 @@
             this.syncMode = record.sync_mode.mode
             this.jobName = record.job_name
             this.cover = record.cover
-            console.log(this.syncMode)
             if (this.selectedTargetTable.includes(this.redisSpitKey)) {
               const arr = this.selectedTargetTable.split(this.redisSpitKey)
               this.redisToValue = arr[1]
@@ -422,35 +423,42 @@
             }
             fetchTables(this.selectedTargetSource).then(res => {
               this.targetTables = res.result
+            }).catch(err => {
+              const errData = err.response?.data || {}
+              this.$message.error(errData.errstr || err.message || '查询目标表失败')
             })
             this.handleFromTbChange(this.selectedSourceTable)
             fetchTables(this.selectedDataSource).then(res => {
               this.sourceTables = res.result
+            }).catch(err => {
+              const errData = err.response?.data || {}
+              this.$message.error(errData.errstr || err.message || '查询来源表失败')
             })
             this.handleToTbChange(this.selectedTargetTable)
+          }).catch(err => {
+            const errData = err.response?.data || {}
+            this.$message.error(errData.errstr || err.message || '查询任务详情失败')
           })
         }
       },
       handleFromChange (value) {
         this.selectedDataSource = value
-        // 切换数据源同步表单数据
         this.form.setFieldsValue({ 'selectedDataSource': value })
-        // 清空表单中来源表
         this.form.setFieldsValue({ 'selectedSourceTable': '' })
         this.selectloading = true
         fetchTables(value).then(res => {
           this.selectloading = false
           this.sourceTables = res.result
+        }).catch(err => {
+          this.selectloading = false
+          const errData = err.response?.data || {}
+          this.$message.error(errData.errstr || err.message || '查询来源表失败')
         })
       },
       handleToDsChange (value) {
         this.selectedTargetSource = value
-        // 切换目标数据源同步表单数据
         this.form.setFieldsValue({ 'selectedTargetSource': value })
-        // 清空表单中目标表
         this.form.setFieldsValue({ 'selectedTargetTable': '' })
-        console.log('当前选中数据源类型', this.selectedTargetSource, this.isRedisTo)
-        // 如果目标数据源是redis 则设置为全量
         if (this.toDsList.find(item => { return item.dsId === this.selectedTargetSource })?.type === 'redis') {
           this.syncMode = 'overwrite'
           this.isIncrement = false
@@ -459,12 +467,15 @@
           fetchTables(value).then(res => {
             this.selectloading = false
             this.targetTables = res.result
+          }).catch(err => {
+            this.selectloading = false
+            const errData = err.response?.data || {}
+            this.$message.error(errData.errstr || err.message || '查询目标表失败')
           })
         }
       },
       handleFromTbChange (value) {
         this.selectloading = true
-        // 切换来源表同步表单数据
         this.form.setFieldsValue({ 'selectedSourceTable': value })
         this.selectedSourceTable = value
         this.queryParam = {
@@ -476,6 +487,10 @@
         }).then(res => {
           this.selectloading = false
           this.sourceFields = res.result
+        }).catch(err => {
+          this.selectloading = false
+          const errData = err.response?.data || {}
+          this.$message.error(errData.errstr || err.message || '查询来源字段失败')
         })
       },
       // 目标数据源为redis时切换类型
@@ -498,7 +513,6 @@
       handleToTbChange (value) {
         this.selectloading = true
         this.selectedTargetTable = value
-        // 切换目标表同步表单数据
         this.form.setFieldsValue({ 'selectedTargetTable': value })
         this.queryParam = {
           'ds_id': this.selectedTargetSource,
@@ -509,6 +523,10 @@
         }).then(res => {
           this.selectloading = false
           this.targetFields = res.result
+        }).catch(err => {
+          this.selectloading = false
+          const errData = err.response?.data || {}
+          this.$message.error(errData.errstr || err.message || '查询目标字段失败')
         })
       },
       addMapping () {

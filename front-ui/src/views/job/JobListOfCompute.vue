@@ -86,8 +86,12 @@ export default {
         {
           title: '目标表',
           width: '10%',
-          dataIndex: 'to_tb_name',
-          sorter: true
+          dataIndex: 'to_tb_name'
+        },
+        {
+          title: '上次任务执行时间',
+          width: '10%',
+          dataIndex: 'start_time'
         },
         {
           title: '任务状态',
@@ -325,7 +329,7 @@ export default {
     this.refreshTimer = setInterval(() => {
       console.log('执行定时刷新')
       this.init()
-    }, 15000)
+    }, 60000)
   }
 }
 </script>

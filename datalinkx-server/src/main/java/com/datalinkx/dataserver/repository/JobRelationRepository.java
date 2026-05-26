@@ -58,6 +58,6 @@ public interface JobRelationRepository extends CrudRepository<JobRelationBean, S
     @Query("SELECT j FROM JobRelationBean j WHERE j.isDel = 0 AND j.jobId = :jobId")
     List<JobRelationBean> findSubJob(String jobId);
 
-    @Query(value = "SELECT j FROM JobRelationBean j WHERE j.isDel = 0 AND j.subJobId = :jobId")
+    @Query("SELECT j FROM JobRelationBean j WHERE j.isDel = 0 AND j.subJobId = :jobId")
     List<JobRelationBean> findParentJob(String jobId);
 }

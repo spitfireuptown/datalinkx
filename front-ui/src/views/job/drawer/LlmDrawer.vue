@@ -28,22 +28,34 @@
     </div>
 
     <div class="llm-content">
-      <span class="llm-label">模型名称</span>
+      <span class="llm-label">模型名称 <span class="required">*</span></span>
       <a-input
         :value="model"
         style="width: 100%; margin-bottom: 12px;"
         placeholder="请输入模型名称"
         @input="handleModelInput"
+        :required="true"
       />
     </div>
 
     <div class="llm-content">
-      <span class="llm-label">API Key</span>
+      <span class="llm-label">API Key <span class="required">*</span></span>
       <a-input
         :value="apiKey"
         style="width: 100%; margin-bottom: 12px;"
         placeholder="请输入API Key"
         @input="handleApiKeyInput"
+        :required="true"
+      />
+    </div>
+
+    <div class="llm-content">
+      <span class="llm-label">API Path</span>
+      <a-input
+        :value="apiPath"
+        style="width: 100%; margin-bottom: 12px;"
+        placeholder="请输入API Path"
+        @input="handleApiPathInput"
       />
     </div>
 
@@ -80,6 +92,10 @@ export default {
       type: String,
       default: ''
     },
+    apiPath: {
+      type: String,
+      default: ''
+    },
     prompt: {
       type: String,
       default: ''
@@ -97,6 +113,10 @@ export default {
 
     handleApiKeyInput (e) {
       this.$emit('api-key-change', e.target.value)
+    },
+
+    handleApiPathInput (e) {
+      this.$emit('api-path-change', e.target.value)
     },
 
     handlePromptInput (e) {
@@ -133,6 +153,10 @@ export default {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
+  }
+  
+  .required {
+    color: #ff4d4f;
   }
 }
 </style>

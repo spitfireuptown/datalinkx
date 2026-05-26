@@ -7,3 +7,4 @@ export function validateDynamicCode (data) {
     data: data
   })
 }
+

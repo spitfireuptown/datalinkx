@@ -85,14 +85,12 @@ export default {
         {
           title: '目标表',
           width: '10%',
-          dataIndex: 'to_tb_name',
-          sorter: true
+          dataIndex: 'to_tb_name'
         },
         {
           title: '上次任务执行时间',
           width: '10%',
-          dataIndex: 'start_time',
-          sorter: true
+          dataIndex: 'start_time'
         },
         {
           title: '任务状态',
@@ -168,7 +166,9 @@ export default {
       }).then(res => {
         this.tableData = res.result.data
         this.pagination.total = +res.result.total
-        this.loading = false
+      }).catch(err => {
+        const errData = err.response?.data || {}
+        this.$message.error(errData.errstr || err.message || '查询失败')
       }).finally(() => {
         this.loading = false
       })
@@ -189,8 +189,11 @@ export default {
           this.$message.info('删除成功')
           this.init()
         } else {
-          this.$message.error(res.errstr)
+          this.$message.error(res.errstr || '删除失败')
         }
+      }).catch(err => {
+        const errData = err.response?.data || {}
+        this.$message.error(errData.errstr || err.message || '删除失败')
       }).finally(() => {
         this.loading = false
       })
@@ -219,13 +222,17 @@ export default {
       })
     },
     stopJob (record) {
+      this.loading = true
       stop(record.job_id).then(res => {
         if (res.status === '0') {
           this.$message.info('停止成功')
           this.init()
         } else {
-          this.$message.error(res.errstr)
+          this.$message.error(res.errstr || '停止失败')
         }
+      }).catch(err => {
+        const errData = err.response?.data || {}
+        this.$message.error(errData.errstr || err.message || '停止失败')
       }).finally(() => {
         this.loading = false
       })
@@ -317,7 +324,7 @@ export default {
     this.createEventSource()
     this.refreshTimer = setInterval(() => {
       this.init()
-    }, 15000)
+    }, 60000)
   }
 }
 </script>

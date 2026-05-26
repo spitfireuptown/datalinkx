@@ -1,6 +1,7 @@
 package com.datalinkx.driver.dsdriver.transformdriver.transform;
 
 import com.datalinkx.common.constants.MetaConstants;
+import com.datalinkx.driver.dsdriver.base.meta.TransformNodeMeta;
 import com.datalinkx.driver.dsdriver.base.transform.SQLNode;
 import com.datalinkx.driver.dsdriver.base.transform.TransformNode;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
@@ -39,5 +40,10 @@ public class SQLTransformDriver extends ITransformDriver {
             sql += String.format(" group by %s", dataMeta.get("sqlOperatorGroupValue").asText());
         }
         return sql;
+    }
+
+    @Override
+    public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
+        return null;
     }
 }

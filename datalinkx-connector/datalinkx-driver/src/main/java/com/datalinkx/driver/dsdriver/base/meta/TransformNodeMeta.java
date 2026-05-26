@@ -1,4 +1,4 @@
-package com.datalinkx.dataserver.bean.vo;
+package com.datalinkx.driver.dsdriver.base.meta;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 动态编译相关 VO
  */
-public class DynamicCodeVo {
+public class TransformNodeMeta {
 
     /**
      * 校验结果
