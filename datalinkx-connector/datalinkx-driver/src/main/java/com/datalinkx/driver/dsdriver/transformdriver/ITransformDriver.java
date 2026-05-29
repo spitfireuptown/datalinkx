@@ -10,7 +10,7 @@ import java.util.Map;
 public abstract class ITransformDriver {
     public abstract TransformNode transferInfo(Map<String, Object> commonSettings, String meta);
     public abstract String analysisTransferMeta(JsonNode nodeMeta);
-    public abstract TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception;
+    public abstract TransformNodeMeta.ValidateResult verify(String connectId, JsonNode nodeMeta);
 
     protected JsonNode findNodeDataByType(JsonNode nodeMeta, String type) {
         JsonNode cells = nodeMeta.get("cells");

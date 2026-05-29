@@ -12,72 +12,17 @@
       <p>1、当前画布仅支持单SQL算子</p>
       <p>2、字符串必须使用单引号''</p>
     </div>
-
-    <div class="tag-container">
-      <a-tag
-        v-for="tag in tags"
-        :key="tag"
-        draggable
-        @dragstart="handleDragStart(tag, $event)"
-      >
-        {{ tag }}
-      </a-tag>
-    </div>
-
-    <div class="new-field-btn">
-      <a-input
-        v-if="inputVisible"
-        ref="inputRef"
-        type="text"
-        size="small"
-        :style="{ width: '120px' }"
-        :value="inputValue"
-        @change="handleInputChange"
-        @blur="handleInputConfirm"
-        @keyup.enter="handleInputConfirm"
-      />
-      <a-tag
-        v-else
-        style="background: #fff; border-style: dashed;"
-        @click="showInput"
-      >
-        <a-icon type="plus" /> New Field
-      </a-tag>
-    </div>
-
     <div class="sql-content">
       <span class="sql-label">
-        select
-        <a-icon type="sync" @click="cleanSelect" />
+        SQL语句
       </span>
       <a-textarea
         @drop="handleDrop"
         @dragover.prevent
-        :value="sqlValue"
-        :disabled="disabledTrue"
-        placeholder="基于上游节点字段, 从上面的标签中拖拽至此处"
+        :value="sql"
+        placeholder="请输入符合来源数据源的完整的SQL语句"
+        :auto-size="{ minRows: 15, maxRows: 25 }"
         @input="handleSqlInput"
-      />
-
-      <span class="sql-label">from</span>
-      <a-input
-        :value="fromTable"
-        :disabled="disabledTrue"
-        @input="handleFromInput"
-      />
-
-      <span class="sql-label">where</span>
-      <a-textarea
-        :value="whereValue"
-        placeholder=""
-        @input="handleWhereInput"
-      />
-
-      <span class="sql-label">group</span>
-      <a-textarea
-        :value="groupValue"
-        placeholder=""
-        @input="handleGroupInput"
       />
     </div>
   </a-drawer>
@@ -98,25 +43,9 @@ export default {
       type: Array,
       default: () => []
     },
-    sqlValue: {
+    sql: {
       type: String,
       default: ''
-    },
-    fromTable: {
-      type: String,
-      default: ''
-    },
-    whereValue: {
-      type: String,
-      default: ''
-    },
-    groupValue: {
-      type: String,
-      default: ''
-    },
-    disabledTrue: {
-      type: Boolean,
-      default: true
     },
     graph: {
       default: null
@@ -124,6 +53,10 @@ export default {
     type: {
       type: String,
       default: 'sql'
+    },
+    dsId: {
+      type: String,
+      default: ''
     }
   },
 
@@ -142,8 +75,8 @@ export default {
     handleDrop (event) {
       event.preventDefault()
       const tag = event.dataTransfer.getData('text')
-      const newValue = this.sqlValue
-        ? `${this.sqlValue}, ${tag}`
+      const newValue = this.sql
+        ? `${this.sql} ${tag}`
         : tag
       this.$emit('sql-change', newValue)
       this.$emit('tag-add', tag)
@@ -153,40 +86,8 @@ export default {
       this.$emit('sql-change', e.target.value)
     },
 
-    handleFromInput (e) {
-      this.$emit('from-change', e.target.value)
-    },
-
-    handleWhereInput (e) {
-      this.$emit('where-change', e.target.value)
-    },
-
-    handleGroupInput (e) {
-      this.$emit('group-change', e.target.value)
-    },
-
-    cleanSelect () {
-      this.$emit('clean-select')
-    },
-
-    showInput () {
-      this.inputVisible = true
-      this.$nextTick(() => {
-        this.$refs.inputRef && this.$refs.inputRef.focus()
-      })
-    },
-
-    handleInputChange (e) {
-      this.inputValue = e.target.value
-    },
-
-    handleInputConfirm () {
-      const value = this.inputValue
-      if (value && !this.tags.includes(value)) {
-        this.$emit('tag-add', value)
-      }
-      this.inputValue = ''
-      this.inputVisible = false
+    cleanSql () {
+      this.$emit('sql-change', '')
     },
 
     afterVisibleChange (val) {
@@ -195,11 +96,16 @@ export default {
 
     onClose () {
       if (this.graph) {
+        this.$emit('before-close')
         const graphData = this.graph.toJSON()
-        validateTransformMeta({ graph: JSON.stringify(graphData), type: this.type })
+        validateTransformMeta({ graph: JSON.stringify(graphData), type: this.type, dsId: this.dsId })
           .then(res => {
             const result = res.result
             if (result.valid) {
+              // 将outputFields传递给父组件
+              if (result.outputFields && result.outputFields.length > 0) {
+                this.$emit('validate-success', result.outputFields)
+              }
               this.$emit('close')
             } else {
               this.$message.warning('校验失败：' + result.message + '，仍将保存当前配置')

@@ -145,6 +145,7 @@ public class JobForm {
 
 	@Data
 	public static class TransformValidateForm {
+		private String dsId;
 		private String type;
 		private String graph;
 	}

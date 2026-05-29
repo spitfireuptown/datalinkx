@@ -196,6 +196,40 @@ public class JdbcDriver<T extends JdbcSetupInfo, P extends JdbcReader, Q extends
         }
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        Connection connection = (Connection) this.connect(false);
+        try (Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+             ResultSet resultSet = stmt.executeQuery(sql)) {
+            log.info(String.format("executeQuery, sql: %s, onlyColumns: %s", sql, onlyColumns));
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            
+            if (onlyColumns) {
+                Map<String, Object> columnMap = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    columnMap.put(metaData.getColumnName(i), metaData.getColumnTypeName(i));
+                }
+                resultList.add(columnMap);
+            } else {
+                while (resultSet.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        row.put(metaData.getColumnName(i), resultSet.getObject(i));
+                    }
+                    resultList.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            log.error(String.format("execute query (%s) failed", sql), e);
+            throw new Exception("execute query failed", e);
+        } finally {
+            this.disConnect(connection);
+        }
+        return resultList;
+    }
+
 
     public List<String> fetchTable(String catalog, String schema, Connection connection) {
         List<String> tables = new ArrayList<>();

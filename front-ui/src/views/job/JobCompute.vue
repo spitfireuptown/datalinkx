@@ -29,19 +29,14 @@
     <SqlDrawer
       :visible="drawerVisible.sql"
       :tags="sqlConfig.tags"
-      :sql-value="sqlConfig.sqlValue"
-      :from-table="selectedSourceTable"
-      :where-value="sqlConfig.whereValue"
-      :group-value="sqlConfig.groupValue"
-      :disabled-true="disabledTrue"
+      :sql="sqlConfig.sql"
       :graph="graph"
+      :ds-id="sourceConfig.dsId"
       @sql-change="handleSqlChange"
-      @from-change="handleSqlFromChange"
-      @where-change="handleSqlWhereChange"
-      @group-change="handleSqlGroupChange"
-      @clean-select="cleanSelect"
       @tag-add="handleTagAdd"
       @visible-change="afterVisibleChange"
+      @before-close="saveNodeData"
+      @validate-success="handleSqlValidateSuccess"
       @close="handleDrawerClose('sql')"
     />
 
@@ -220,7 +215,8 @@ export default {
       sqlValue: '',
       whereValue: '',
       groupValue: '',
-      tags: []
+      tags: [],
+      outputFields: []
     }
 
     // LLM算子配置
@@ -834,30 +830,19 @@ export default {
      * SQL内容变更
      */
     handleSqlChange (value) {
-      this.sqlConfig.sqlValue = value
-    },
-
-    handleSqlFromChange (value) {
-      this.selectedSourceTable = value
-    },
-
-    handleSqlWhereChange (value) {
-      this.sqlConfig.whereValue = value
-    },
-
-    handleSqlGroupChange (value) {
-      this.sqlConfig.groupValue = value
+      this.sqlConfig.sql = value
     },
 
     /**
-     * 清空select字段
+     * SQL算子校验成功，保存输出字段
      */
-    cleanSelect () {
-      this.sqlConfig.sqlValue = ''
-      this.toDsSourceFields = []
-      this.sourceConfig.mappings.forEach(mapping => {
-        if (mapping.sourceField && !this.toDsSourceFields.includes(mapping.sourceField)) {
-          this.toDsSourceFields.push(mapping.sourceField)
+    handleSqlValidateSuccess (outputFields) {
+      // 保存SQL算子的输出字段
+      this.sqlConfig.outputFields = outputFields
+      // 将字段添加到toDsSourceFields供目标数据源使用
+      outputFields.forEach(field => {
+        if (!this.toDsSourceFields.includes(field.name)) {
+          this.toDsSourceFields.push(field.name)
         }
       })
     },
@@ -1069,6 +1054,25 @@ export default {
         }
       }
 
+      // 收集SQL算子的输出字段
+      const sqlNodes = this.graph.getNodes().filter(node => node.shape === NODE_SHAPE.SQL)
+      const sqlOutputFields = []
+      sqlNodes.forEach(node => {
+        const outputFields = node.getData()?.outputFields || []
+        outputFields.forEach(field => {
+          if (!sqlOutputFields.includes(field.name)) {
+            sqlOutputFields.push(field.name)
+          }
+        })
+      })
+
+      // 添加SQL算子的输出字段
+      sqlOutputFields.forEach(fieldName => {
+        if (!this.toDsSourceFields.includes(fieldName)) {
+          this.toDsSourceFields.push(fieldName)
+        }
+      })
+
       // 收集动态编译算子的输出字段
       const dynamicNodes = this.graph.getNodes().filter(node => node.shape === NODE_SHAPE.DYNAMIC)
       const dynamicOutputFields = []
@@ -1088,10 +1092,11 @@ export default {
         }
       })
 
-      // 移除已不存在的动态编译字段
+      // 移除已不存在的字段
       this.toDsSourceFields = this.toDsSourceFields.filter(field => {
         return this.sourceConfig.mappings.some(m => m.sourceField === field) ||
                field === 'llm_output' ||
+               sqlOutputFields.includes(field) ||
                dynamicOutputFields.includes(field)
       })
     },
@@ -1116,11 +1121,10 @@ export default {
 
       if (shape === NODE_SHAPE.SQL) {
         Object.assign(nodeData, {
-          sqlOperatorValue: this.sqlConfig.sqlValue,
-          sqlOperatorWhereValue: this.sqlConfig.whereValue,
-          sqlOperatorGroupValue: this.sqlConfig.groupValue,
+          sqlOperatorValue: this.sqlConfig.sql,
           sqlOperatorFrom: this.selectedSourceTable,
-          tags: this.sqlConfig.tags
+          tags: this.sqlConfig.tags,
+          outputFields: [...this.sqlConfig.outputFields]
         })
 
         // 同步tags到mappings
@@ -1145,6 +1149,7 @@ export default {
       }
 
       if (shape === NODE_SHAPE.START) {
+        nodeData.dsId = this.sourceConfig.dsId
         nodeData.mappings = [...this.sourceConfig.mappings]
       }
 
@@ -1366,6 +1371,7 @@ export default {
             this.sqlConfig.whereValue = cell.data?.sqlOperatorWhereValue || ''
             this.sqlConfig.groupValue = cell.data?.sqlOperatorGroupValue || ''
             this.sqlConfig.tags = cell.data?.tags || []
+            this.sqlConfig.outputFields = cell.data?.outputFields || []
           }
           if (cell.shape === NODE_SHAPE.LLM) {
             this.llmConfig.modelProvider = cell.data?.modelProvider || ''
@@ -1379,6 +1385,7 @@ export default {
             this.dynamicConfig.outputFields = cell.data?.outputFields || []
           }
           if (cell.shape === NODE_SHAPE.START) {
+            this.sourceConfig.dsId = cell.data?.dsId || ''
             this.sourceConfig.mappings = cell.data?.mappings || []
           }
         })
@@ -1395,6 +1402,7 @@ export default {
       this.sqlConfig.whereValue = ''
       this.sqlConfig.groupValue = ''
       this.sqlConfig.tags = []
+      this.sqlConfig.outputFields = []
       this.llmConfig.modelProvider = ''
       this.llmConfig.model = ''
       this.llmConfig.apiKey = ''

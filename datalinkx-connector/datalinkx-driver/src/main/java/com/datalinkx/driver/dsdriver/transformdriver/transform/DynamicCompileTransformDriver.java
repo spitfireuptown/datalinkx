@@ -35,7 +35,7 @@ public class DynamicCompileTransformDriver extends ITransformDriver {
     }
 
     @Override
-    public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
+    public TransformNodeMeta.ValidateResult verify(String connectId, JsonNode nodeMeta) {
         JsonNode dataMeta = findNodeDataByType(nodeMeta, "DynamicCompile");
         String sourceCode = null;
         

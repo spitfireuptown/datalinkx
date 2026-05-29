@@ -233,7 +233,15 @@ export default {
     },
 
     onClose () {
-      this.$emit('close')
+      this.$emit('close', {
+        dsId: this.source.dsId,
+        dsName: this.source.dsName,
+        tableName: this.source.tableName,
+        mappings: this.mappings,
+        syncMode: this.syncMode,
+        transCover: this.transCover,
+        incrementField: this.incrementField
+      })
     }
   }
 }

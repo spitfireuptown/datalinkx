@@ -95,7 +95,7 @@ public class LLMTransformDriver extends ITransformDriver {
     }
 
     @Override
-    public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
+    public TransformNodeMeta.ValidateResult verify(String connectId, JsonNode nodeMeta) {
         JsonNode dataMeta = findNodeDataByType(nodeMeta, "LLM");
         if (dataMeta == null) {
             return TransformNodeMeta.ValidateResult.builder().valid(false).message("未找到LLM算子或LLM配置数据为空").build();

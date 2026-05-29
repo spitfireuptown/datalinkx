@@ -1,5 +1,8 @@
 package com.datalinkx.driver.dsdriver;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public interface IDsDriver {
     Object connect(boolean check) throws Exception;
@@ -24,4 +27,5 @@ public interface IDsDriver {
     default String columnQuota() {
         return "";
     }
+    List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception;
 }
