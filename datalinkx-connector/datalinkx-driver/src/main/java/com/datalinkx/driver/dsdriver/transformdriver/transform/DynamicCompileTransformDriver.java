@@ -36,8 +36,13 @@ public class DynamicCompileTransformDriver extends ITransformDriver {
 
     @Override
     public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
-        JsonNode dataMeta = nodeMeta.get("data");
-        String sourceCode = dataMeta.get("sourceCode").asText();
+        JsonNode dataMeta = findNodeDataByType(nodeMeta, "DynamicCompile");
+        String sourceCode = null;
+        
+        if (dataMeta != null && dataMeta.has("sourceCode")) {
+            sourceCode = dataMeta.get("sourceCode").asText();
+        }
+        
         if (sourceCode == null || sourceCode.trim().isEmpty()) {
             return TransformNodeMeta.ValidateResult.builder()
                     .valid(false)

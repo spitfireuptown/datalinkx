@@ -84,6 +84,8 @@
 </template>
 
 <script>
+import { validateTransformMeta } from '@/api/job/transform'
+
 export default {
   name: 'SqlDrawer',
 
@@ -115,6 +117,13 @@ export default {
     disabledTrue: {
       type: Boolean,
       default: true
+    },
+    graph: {
+      default: null
+    },
+    type: {
+      type: String,
+      default: 'sql'
     }
   },
 
@@ -185,7 +194,24 @@ export default {
     },
 
     onClose () {
-      this.$emit('close')
+      if (this.graph) {
+        const graphData = this.graph.toJSON()
+        validateTransformMeta({ graph: JSON.stringify(graphData), type: this.type })
+          .then(res => {
+            const result = res.result
+            if (result.valid) {
+              this.$emit('close')
+            } else {
+              this.$message.warning('校验失败：' + result.message + '，仍将保存当前配置')
+              this.$emit('close')
+            }
+          })
+          .catch(() => {
+            this.$emit('close')
+          })
+      } else {
+        this.$emit('close')
+      }
     }
   }
 }

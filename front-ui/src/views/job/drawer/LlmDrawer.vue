@@ -10,6 +10,7 @@
   >
     <div class="llm-hint">
       <p>1、如果需要引用来源表字段使用${}，例：${division_name}</p>
+      <p>2、使用OPENAI模型代理地址需配置完整的模型对话url</p>
     </div>
 
     <div class="llm-content">
@@ -40,7 +41,7 @@
 
     <div class="llm-content">
       <span class="llm-label">API Key <span class="required">*</span></span>
-      <a-input
+      <a-input-password
         :value="apiKey"
         style="width: 100%; margin-bottom: 12px;"
         placeholder="请输入API Key"
@@ -72,6 +73,8 @@
 </template>
 
 <script>
+import { validateTransformMeta } from '@/api/job/transform'
+
 export default {
   name: 'LlmDrawer',
 
@@ -99,6 +102,17 @@ export default {
     prompt: {
       type: String,
       default: ''
+    },
+    graph: {
+      default: null
+    },
+    nodeId: {
+      type: String,
+      default: ''
+    },
+    type: {
+      type: String,
+      default: 'llm'
     }
   },
 
@@ -128,7 +142,40 @@ export default {
     },
 
     onClose () {
-      this.$emit('close')
+      // 先将配置保存到节点
+      if (this.graph && this.nodeId) {
+        const node = this.graph.getNodes().find(n => n.id === this.nodeId)
+        if (node) {
+          const currentData = node.getData() || {}
+          node.setData({
+            ...currentData,
+            modelProvider: this.modelProvider,
+            model: this.model,
+            apiKey: this.apiKey,
+            apiPath: this.apiPath,
+            prompt: this.prompt
+          })
+        }
+      }
+
+      if (this.graph) {
+        const graphData = this.graph.toJSON()
+        validateTransformMeta({ graph: JSON.stringify(graphData), type: this.type })
+          .then(res => {
+            const result = res.result
+            if (result.valid) {
+              this.$emit('close')
+            } else {
+              this.$message.warning('校验失败：' + result.message + '，仍将保存当前配置')
+              this.$emit('close')
+            }
+          })
+          .catch(() => {
+            this.$emit('close')
+          })
+      } else {
+        this.$emit('close')
+      }
     }
   }
 }

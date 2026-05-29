@@ -34,6 +34,7 @@
       :where-value="sqlConfig.whereValue"
       :group-value="sqlConfig.groupValue"
       :disabled-true="disabledTrue"
+      :graph="graph"
       @sql-change="handleSqlChange"
       @from-change="handleSqlFromChange"
       @where-change="handleSqlWhereChange"
@@ -52,6 +53,8 @@
       :api-key="llmConfig.apiKey"
       :api-path="llmConfig.apiPath"
       :prompt="llmConfig.prompt"
+      :graph="graph"
+      :node-id="currentNodeId"
       @model-provider-change="handleModelProviderChange"
       @model-change="handleModelChange"
       @api-key-change="handleApiKeyChange"
@@ -66,6 +69,8 @@
       :visible="drawerVisible.dynamic"
       :source-code="dynamicConfig.sourceCode"
       :output-fields="dynamicConfig.outputFields"
+      :graph="graph"
+      :node-id="currentNodeId"
       @source-code-change="handleSourceCodeChange"
       @output-fields-change="handleOutputFieldsChange"
       @validate-success="handleValidateSuccess"
@@ -658,6 +663,28 @@ export default {
         if (this.currentCell) {
           this.currentCell.removeTool('button')
           this.currentCell.removeTool('button-move')
+        }
+      })
+
+      // 节点被删除
+      this.graph.on('cell:removed', ({ cell }) => {
+        if (cell.isNode()) {
+          // 如果删除的是当前编辑的节点，清空相关配置
+          if (cell.id === this.currentNodeId) {
+            this.currentNodeId = ''
+            this.resetFormState()
+          }
+
+          // 如果删除的是动态编译节点，清理其输出字段
+          if (cell.shape === NODE_SHAPE.DYNAMIC) {
+            const outputFields = cell.getData()?.outputFields || []
+            outputFields.forEach(field => {
+              const index = this.toDsSourceFields.indexOf(field.name)
+              if (index > -1) {
+                this.toDsSourceFields.splice(index, 1)
+              }
+            })
+          }
         }
       })
     },

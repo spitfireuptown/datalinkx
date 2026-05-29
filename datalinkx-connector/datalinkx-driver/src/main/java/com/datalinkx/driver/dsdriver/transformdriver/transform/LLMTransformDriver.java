@@ -3,6 +3,7 @@ package com.datalinkx.driver.dsdriver.transformdriver.transform;
 import com.datalinkx.common.constants.MetaConstants;
 import com.datalinkx.common.utils.JsonUtils;
 import com.datalinkx.common.utils.ObjectUtils;
+import com.datalinkx.common.utils.TelnetUtil;
 import com.datalinkx.driver.dsdriver.base.meta.TransformNodeMeta;
 import com.datalinkx.driver.dsdriver.base.transform.LLMNode;
 import com.datalinkx.driver.dsdriver.base.transform.TransformNode;
@@ -38,7 +39,7 @@ public class LLMTransformDriver extends ITransformDriver {
         
         LLMNode.LLMNodeBuilder builder = LLMNode.builder()
                 .modelProvider(modelProvider)
-                .pluginName(MetaConstants.CommonConstant.TRANSFORM_DYNAMIC_COMPILE_NAME)
+                .pluginName(MetaConstants.CommonConstant.TRANSFORM_LLM)
                 .model(model)
                 .prompt(llmConfig.get("prompt"))
                 .sourceTableName(MetaConstants.CommonConstant.SOURCE_TABLE)
@@ -57,6 +58,9 @@ public class LLMTransformDriver extends ITransformDriver {
                             )
                             .build()
             ).apiKey((String) commonSettings.get("openai.api_path"));
+        }
+        if (!ObjectUtils.isEmpty(apiPath)) {
+            builder.openaiApiPath(apiPath);
         }
 
         if (StringUtils.isNotEmpty(apiKey)) {
@@ -92,20 +96,29 @@ public class LLMTransformDriver extends ITransformDriver {
 
     @Override
     public TransformNodeMeta.ValidateResult verify(JsonNode nodeMeta) throws Exception {
-        JsonNode dataMeta = nodeMeta.get("data");
+        JsonNode dataMeta = findNodeDataByType(nodeMeta, "LLM");
         if (dataMeta == null) {
-            throw new Exception("LLM配置数据为空");
+            return TransformNodeMeta.ValidateResult.builder().valid(false).message("未找到LLM算子或LLM配置数据为空").build();
         }
         
         if (!dataMeta.has("model") || StringUtils.isEmpty(dataMeta.get("model").asText())) {
-            throw new Exception("模型名称不能为空");
+            return TransformNodeMeta.ValidateResult.builder().valid(false).message("模型名称不能为空").build();
         }
         
         if (!dataMeta.has("apiKey") || StringUtils.isEmpty(dataMeta.get("apiKey").asText())) {
-            throw new Exception("API Key不能为空");
+            return TransformNodeMeta.ValidateResult.builder().valid(false).message("API Key不能为空").build();
+        }
+
+        if (!ObjectUtils.isEmpty(dataMeta.get("apiPath"))) {
+            String apiPath = dataMeta.get("apiPath").asText();
+            try {
+                TelnetUtil.checkLlmApiPath(apiPath);
+            } catch (Exception e) {
+                return TransformNodeMeta.ValidateResult.builder().valid(false).message("API地址校验失败: " + e.getMessage()).build();
+            }
         }
         
-        return null;
+        return TransformNodeMeta.ValidateResult.builder().valid(true).build();
     }
 
     private Map<String, String> parseMeta(String meta) {

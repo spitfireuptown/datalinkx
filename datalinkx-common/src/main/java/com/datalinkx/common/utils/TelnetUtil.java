@@ -33,10 +33,13 @@ public final class TelnetUtil {
     private static final Pattern JDBC_PATTERN = Pattern.compile("(?<host>[^:@/]+):(?<port>\\d+).*");
     public static final String PHOENIX_PREFIX = "jdbc:phoenix";
     private static final Pattern PHOENIX_PATTERN = Pattern.compile("jdbc:phoenix:(?<host>\\S+):(?<port>\\d+).*");
+    private static final Pattern HTTP_URL_PATTERN = Pattern.compile("^https?://(?<host>[^:/]+)(?::(?<port>\\d+))?.*");
     private static final String HOST_KEY = "host";
     private static final String PORT_KEY = "port";
     private static final String SPLIT_KEY = ",";
     private static final int TELNET_TIMEOUT = 3000;
+    private static final int DEFAULT_HTTP_PORT = 80;
+    private static final int DEFAULT_HTTPS_PORT = 443;
 
     public static void telnet(String ip, int port) throws Exception {
         TelnetClient client = null;
@@ -89,5 +92,51 @@ public final class TelnetUtil {
         } else {
             telnet(host, port);
         }
+    }
+
+    /**
+     * 检测 LLM API 地址是否合法并可联通
+     * 
+     * @param apiPath API地址
+     * @throws Exception 当地址不合法或无法联通时抛出异常
+     */
+    public static void checkLlmApiPath(String apiPath) throws Exception {
+        if (StringUtils.isBlank(apiPath)) {
+            throw new IllegalArgumentException("API地址不能为空");
+        }
+
+        // 检查是否包含 http 或 https 协议
+        if (!StringUtils.startsWithIgnoreCase(apiPath, "http://") && 
+            !StringUtils.startsWithIgnoreCase(apiPath, "https://")) {
+            throw new Exception("API地址必须以 http:// 或 https:// 开头");
+        }
+
+        // 解析 host 和 port
+        Matcher matcher = HTTP_URL_PATTERN.matcher(apiPath);
+        if (!matcher.find()) {
+            throw new Exception("API地址格式不正确，请检查地址格式");
+        }
+
+        String host = matcher.group(HOST_KEY);
+        String portStr = matcher.group(PORT_KEY);
+        
+        int port;
+        if (StringUtils.isBlank(portStr)) {
+            // 根据协议确定默认端口
+            port = StringUtils.startsWithIgnoreCase(apiPath, "https://") ? DEFAULT_HTTPS_PORT : DEFAULT_HTTP_PORT;
+        } else {
+            try {
+                port = Integer.parseInt(portStr);
+            } catch (NumberFormatException e) {
+                throw new Exception("API地址中的端口号格式不正确");
+            }
+        }
+
+        if (StringUtils.isBlank(host)) {
+            throw new Exception("API地址中未包含有效的主机地址");
+        }
+
+        // 进行网络联通检测
+        telnet(host, port);
     }
 }

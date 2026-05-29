@@ -116,10 +116,7 @@ public class JobController {
 	@ApiOperation("任务血缘-详情查询")
     @RequestMapping("/relation_blood/info/{jobId}")
     public JobVo.JobRelationBloodVo relationPage(@PathVariable String jobId) {
-        log.info("收到任务血缘查询请求，jobId: {}", jobId);
-        JobVo.JobRelationBloodVo result = jobRelationServiceImpl.relationBloodInfo(jobId);
-        log.info("任务血缘查询请求完成，jobId: {}", jobId);
-        return result;
+        return jobRelationServiceImpl.relationBloodInfo(jobId);
     }
 
 	@ApiOperation("校验动态编译源代码")

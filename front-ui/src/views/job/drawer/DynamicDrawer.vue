@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { validateDynamicCode } from '@/api/job/dynamicCode'
+import { validateTransformMeta } from '@/api/job/transform'
 
 const DEFAULT_SOURCE_CODE = 'import org.apache.seatunnel.api.table.catalog.Column;\nimport org.apache.seatunnel.transform.common.SeaTunnelRowAccessor;\nimport org.apache.seatunnel.api.table.catalog.*;\nimport org.apache.seatunnel.api.table.type.*;\nimport java.util.ArrayList;\n\npublic Column[] getInlineOutputColumns(CatalogTable inputCatalogTable) {\n    PhysicalColumn col1 =\n        PhysicalColumn.of(\n            "compile_language",\n            BasicType.STRING_TYPE,\n            10L,\n            true,\n            "",\n            "");\n    PhysicalColumn col2 =\n        PhysicalColumn.of(\n            "age",\n            BasicType.INT_TYPE,\n            0L,\n            false,\n            false,\n            ""\n        );\n    return new Column[] {\n        col1, col2\n    };\n}\n\npublic Object[] getInlineOutputFieldValues(SeaTunnelRowAccessor inputRow) {\n    Object[] fieldValues = new Object[2];\n    // get age\n    Object ageField = inputRow.getField(1);\n    fieldValues[0] = "JAVA";\n    if (Integer.parseInt(ageField.toString()) == 20) {\n        fieldValues[1] = 40;\n    } else {\n        fieldValues[1] = ageField;\n    }\n    return fieldValues;\n}'
 
@@ -74,6 +74,21 @@ export default {
       default: false
     },
     sourceCode: {
+      type: String,
+      default: ''
+    },
+    outputFields: {
+      type: Array,
+      default: () => []
+    },
+    graph: {
+      default: null
+    },
+    type: {
+      type: String,
+      default: 'dynamic'
+    },
+    nodeId: {
       type: String,
       default: ''
     }
@@ -89,8 +104,19 @@ export default {
   watch: {
     visible (val) {
       if (val) {
-        this.localSourceCode = this.sourceCode || DEFAULT_SOURCE_CODE
+        this.localSourceCode = this.sourceCode || this.localSourceCode || DEFAULT_SOURCE_CODE
       }
+    },
+    sourceCode (val) {
+      if (val && this.visible) {
+        this.localSourceCode = val
+      }
+    }
+  },
+
+  mounted () {
+    if (this.visible) {
+      this.localSourceCode = this.sourceCode || DEFAULT_SOURCE_CODE
     }
   },
 
@@ -106,8 +132,22 @@ export default {
         return
       }
 
+      // 先将代码保存到节点
+      if (this.graph && this.nodeId) {
+        const node = this.graph.getNodes().find(n => n.id === this.nodeId)
+        if (node) {
+          const currentData = node.getData() || {}
+          node.setData({
+            ...currentData,
+            sourceCode: this.localSourceCode,
+            outputFields: this.outputFields
+          })
+        }
+      }
+
       this.validating = true
-      validateDynamicCode({ source_code: this.localSourceCode })
+      const graphData = this.graph?.toJSON()
+      validateTransformMeta({ graph: graphData ? JSON.stringify(graphData) : '', type: this.type })
         .then(res => {
           const result = res.result
           if (result.valid) {
@@ -134,9 +174,23 @@ export default {
     },
 
     onClose () {
+      // 关闭前先将代码保存到节点
+      if (this.graph && this.nodeId) {
+        const node = this.graph.getNodes().find(n => n.id === this.nodeId)
+        if (node) {
+          const currentData = node.getData() || {}
+          node.setData({
+            ...currentData,
+            sourceCode: this.localSourceCode,
+            outputFields: this.outputFields
+          })
+        }
+      }
+
       // 关闭前自动进行语法校验
-      if (this.localSourceCode.trim()) {
-        validateDynamicCode({ source_code: this.localSourceCode })
+      if (this.graph) {
+        const graphData = this.graph.toJSON()
+        validateTransformMeta({ graph: JSON.stringify(graphData), type: this.type })
           .then(res => {
             const result = res.result
             if (result.valid) {
