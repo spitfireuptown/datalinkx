@@ -10,14 +10,13 @@ import com.datalinkx.driver.dsdriver.base.transform.TransformNode;
 import com.datalinkx.driver.dsdriver.transformdriver.ITransformDriver;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import org.apache.calcite.sql.SqlCall;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.sql.parser.SqlParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,35 +86,35 @@ public class SQLTransformDriver extends ITransformDriver {
 
     private TransformNodeMeta.ValidateResult checkFunctionAliases(String sql) {
         try {
-            Statement statement = CCJSqlParserUtil.parse(sql);
-            if (!(statement instanceof Select)) {
+            String trimmedSql = sql.trim();
+            if (trimmedSql.endsWith(";")) {
+                trimmedSql = trimmedSql.substring(0, trimmedSql.length() - 1).trim();
+            }
+            SqlNode sqlNode = SqlParser.create(trimmedSql).parseQuery();
+            if (!(sqlNode instanceof SqlSelect)) {
                 return null;
             }
 
-            Select select = (Select) statement;
-            PlainSelect plainSelect = (PlainSelect) select.getSelectBody();
-            
-            @SuppressWarnings("unchecked")
-            List<SelectItem> selectItems = plainSelect.getSelectItems();
-            
-            for (SelectItem item : selectItems) {
-                if (item instanceof SelectExpressionItem) {
-                    SelectExpressionItem exprItem = (SelectExpressionItem) item;
-                    
-                    if (exprItem.getExpression() instanceof Function) {
-                        Function func = (Function) exprItem.getExpression();
-                        String alias = exprItem.getAlias() != null ? exprItem.getAlias().getName() : null;
-                        
-                        if (alias == null || alias.isEmpty()) {
-                            return TransformNodeMeta.ValidateResult.builder()
-                                    .valid(false)
-                                    .message("SQL函数 " + func.getName() + "() 必须使用别名，例如：AS xxx")
-                                    .build();
+            SqlSelect select = (SqlSelect) sqlNode;
+            for (SqlNode item : select.getSelectList()) {
+                if (item instanceof SqlCall) {
+                    SqlCall call = (SqlCall) item;
+                    if (call.getKind() == SqlKind.AS) {
+                        SqlNode expression = call.getOperandList().get(0);
+                        if (expression instanceof SqlCall
+                                && ((SqlCall) expression).getOperator() instanceof SqlFunction) {
+                            // function with alias, ok
                         }
+                    } else if (call.getOperator() instanceof SqlFunction) {
+                        SqlFunction func = (SqlFunction) call.getOperator();
+                        return TransformNodeMeta.ValidateResult.builder()
+                                .valid(false)
+                                .message("SQL函数 " + func.getName() + "() 必须使用别名，例如：AS xxx")
+                                .build();
                     }
                 }
             }
-        } catch (JSQLParserException e) {
+        } catch (SqlParseException e) {
             log.warn("SQL解析失败，使用默认校验逻辑: {}", e.getMessage());
             return null;
         }

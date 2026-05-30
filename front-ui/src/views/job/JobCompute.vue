@@ -29,7 +29,7 @@
     <SqlDrawer
       :visible="drawerVisible.sql"
       :tags="sqlConfig.tags"
-      :sql="sqlConfig.sql"
+      :sql="sqlConfig.sqlValue"
       :graph="graph"
       :ds-id="sourceConfig.dsId"
       @sql-change="handleSqlChange"
@@ -830,7 +830,7 @@ export default {
      * SQL内容变更
      */
     handleSqlChange (value) {
-      this.sqlConfig.sql = value
+      this.sqlConfig.sqlValue = value
     },
 
     /**
@@ -1121,7 +1121,7 @@ export default {
 
       if (shape === NODE_SHAPE.SQL) {
         Object.assign(nodeData, {
-          sqlOperatorValue: this.sqlConfig.sql,
+          sqlOperatorValue: this.sqlConfig.sqlValue,
           sqlOperatorFrom: this.selectedSourceTable,
           tags: this.sqlConfig.tags,
           outputFields: [...this.sqlConfig.outputFields]
