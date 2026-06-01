@@ -3,6 +3,7 @@ package com.datalinkx.dataserver.controller.form;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -144,6 +145,7 @@ public class JobForm {
 	}
 
 	@Data
+	@Builder
 	public static class TransformValidateForm {
 		private String dsId;
 		private String type;

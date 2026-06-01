@@ -40,6 +40,11 @@ public class EsDriver extends AbstractDriver<EsSetupInfo, EsReader, EsWriter> im
         return esService.getClient();
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        return Collections.emptyList();
+    }
+
 
     private Map<String, Object> getBoolQuery(DatalinkXJobDetail.TransferSetting transferSetting) throws Exception {
 

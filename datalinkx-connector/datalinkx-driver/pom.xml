@@ -23,6 +23,12 @@
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
             <version>1.32.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.jsqlparser</groupId>
+                    <artifactId>jsqlparser</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

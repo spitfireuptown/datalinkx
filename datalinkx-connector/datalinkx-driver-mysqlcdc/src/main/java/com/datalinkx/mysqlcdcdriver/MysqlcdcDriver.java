@@ -13,6 +13,8 @@ import com.datalinkx.driver.dsdriver.setupinfo.MysqlcdcSetupInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class MysqlcdcDriver extends AbstractDriver<MysqlcdcSetupInfo, MysqlcdcReader, AbstractWriter> implements IStreamDriver  {
@@ -76,5 +78,10 @@ public class MysqlcdcDriver extends AbstractDriver<MysqlcdcSetupInfo, MysqlcdcRe
     public Object connect(boolean check) throws Exception {
         TelnetUtil.telnet(this.mysqlCDCSetupInfo.getServer(), this.mysqlCDCSetupInfo.getPort());
         return this.mysqlCDCSetupInfo;
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        return Collections.emptyList();
     }
 }

@@ -10,6 +10,10 @@ import com.datalinkx.driver.dsdriver.base.reader.AbstractReader;
 import com.datalinkx.driver.dsdriver.base.writer.WriterInfo;
 import com.datalinkx.driver.dsdriver.setupinfo.RedisSetupInfo;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public class RedisDriver extends AbstractDriver<RedisSetupInfo, AbstractReader, RedisWriter> implements IDsWriter {
 
     private final String connectId;
@@ -26,6 +30,11 @@ public class RedisDriver extends AbstractDriver<RedisSetupInfo, AbstractReader, 
     @Override
     public Object connect(boolean check) throws Exception {
         return this.redisService.getClient();
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        return Collections.emptyList();
     }
 
 

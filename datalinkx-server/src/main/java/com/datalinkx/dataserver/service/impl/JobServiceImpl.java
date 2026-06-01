@@ -19,9 +19,11 @@ import com.datalinkx.dataserver.repository.JobLogRepository;
 import com.datalinkx.dataserver.repository.JobRepository;
 import com.datalinkx.dataserver.service.JobRelationService;
 import com.datalinkx.dataserver.service.JobService;
+import com.datalinkx.dataserver.service.TransformService;
 import com.datalinkx.driver.dsdriver.DsDriverFactory;
 import com.datalinkx.driver.dsdriver.IDsReader;
 import com.datalinkx.driver.dsdriver.IDsWriter;
+import com.datalinkx.driver.dsdriver.base.meta.TransformNodeMeta;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,21 +48,18 @@ public class JobServiceImpl implements JobService {
 
 	@Autowired
 	JobRepository jobRepository;
-
 	@Autowired
 	JobRelationService jobRelationService;
-
 	@Autowired
 	DsServiceImpl dsServiceImpl;
-
 	@Autowired
 	DsRepository dsRepository;
-
 	@Autowired
 	JobLogRepository jobLogRepository;
-
 	@Autowired
 	JobClientApi jobClientApi;
+	@Autowired
+	TransformService transformService;
 
 
 	@Transactional(rollbackFor = Exception.class)
@@ -142,6 +141,17 @@ public class JobServiceImpl implements JobService {
 		if (MetaConstants.DsType.DS_HTTP.equals(fromDsBean.getType()) && nodeBook.containsKey("sql")) {
 			throw new DatalinkXServerException(StatusCode.JOB_CONFIG_ERROR, "HTTP数据源不支持SQL算子");
 		}
+
+		TransformNodeMeta.ValidateResult validate = transformService.validate(
+				JobForm.TransformValidateForm
+						.builder()
+						.dsId(fromDsBean.getDsId())
+						.graph(form.getGraph())
+						.build()
+		);
+		if (!validate.isValid()) {
+			throw new DatalinkXServerException(StatusCode.JOB_CONFIG_ERROR, validate.getMessage());
+		}
 	}
 
 	// 校验流转任务配置合法
@@ -190,10 +200,6 @@ public class JobServiceImpl implements JobService {
 				throw new DatalinkXServerException(StatusCode.JOB_CONFIG_ERROR, e.getMessage());
 			}
 		}
-		// 5、配置流转任务定时表达式
-//		if (ObjectUtils.isEmpty(form.getSchedulerConf()) && !ObjectUtils.nullSafeEquals(form.getType(), MetaConstants.JobType.JOB_TYPE_STREAM)) {
-//			throw new DatalinkXServerException(StatusCode.JOB_CONFIG_ERROR, "批式流转任务需要配置crontab表达式");
-//		}
 		// 6、校验计算任务transform graph是否合法
 		this.validTransformGraph(fromDsBean, form);
 	}

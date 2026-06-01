@@ -37,6 +37,10 @@ public class HttpDriver extends AbstractDriver<HttpSetupInfo, HttpReader, HttpWr
         return this.httpSetupInfo;
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        return Collections.emptyList();
+    }
 
 
     @Override

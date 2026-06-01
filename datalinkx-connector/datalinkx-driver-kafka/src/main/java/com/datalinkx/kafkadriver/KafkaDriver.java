@@ -10,6 +10,10 @@ import com.datalinkx.driver.dsdriver.base.reader.ReaderInfo;
 import com.datalinkx.driver.dsdriver.base.writer.WriterInfo;
 import com.datalinkx.driver.dsdriver.setupinfo.KafkaSetupInfo;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public class KafkaDriver extends AbstractDriver<KafkaSetupInfo, KafkaReader, KafkaWriter> implements IStreamDriver {
     private final KafkaSetupInfo kafkaSetupInfo;
     private final String connectId;
@@ -23,6 +27,11 @@ public class KafkaDriver extends AbstractDriver<KafkaSetupInfo, KafkaReader, Kaf
     public Object connect(boolean check) throws Exception {
         TelnetUtil.telnet(this.kafkaSetupInfo.getServer(), this.kafkaSetupInfo.getPort());
         return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, boolean onlyColumns) throws Exception {
+        return Collections.emptyList();
     }
 
 
