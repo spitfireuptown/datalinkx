@@ -23,8 +23,8 @@
       @change="handleTableChange"
     >
       <span slot="status" slot-scope="text, record" style="display: flex;align-items: center;">
-        <div :style="getTableCss(record.status)"></div>
-        <span>{{ record.status ? '失败' : '成功' }}</span>
+        <span :style="getTableCss(record.status)"></span>
+        <span>{{ getStatusLabel(record.status) }}</span>
       </span>
     </a-table>
   </a-card>
@@ -32,7 +32,19 @@
 
 <script>
 import { pageQuery } from '@/api/job/joblog'
-// 0:CREATE|1:SYNCING|2:SYNC_FINISH|3:SYNC_ERROR|4:QUEUING
+// 0:CREATE|1:SYNCING|2:SYNC_FINISH|3:SYNC_ERROR|4:SYNC_STOP|5:QUEUING
+const StatusType = [
+  {
+    label: '流转完成',
+    value: 0,
+    color: '#52c41a'
+  },
+  {
+    label: '流转失败',
+    value: 1,
+    color: '#f5222d'
+  }
+]
 export default {
   name: 'ContainerBottom',
   components: {
@@ -113,6 +125,14 @@ export default {
     }
   },
   methods: {
+    getTableCss (status) {
+      const item = StatusType.find(item => item.value === status)
+      return `display: inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background-color: ${item?.color || '#999'};`
+    },
+    getStatusLabel (status) {
+      const item = StatusType.find(item => item.value === status)
+      return item?.label || '未知'
+    },
     init () {
       this.loading = true
       pageQuery({
@@ -127,9 +147,7 @@ export default {
         this.queryParam.jobId = ''
       })
     },
-    getTableCss (status) {
-      return `width:12px;height:12px;border-radius:50%;margin-right:4px;background-color: ${status ? '#f5222d' : '#52c41a'};`
-    },
+
     handleTableChange (pagination, filters, sorter) {
       this.pagination = pagination
       this.pages.page_size = pagination.pageSize

@@ -137,7 +137,7 @@ public class StreamJobServiceImpl implements StreamJobService {
     @Override
     public PageVo<List<JobVo.JobStreamPageVo>> streamPage(JobForm.JobPageForm form) {
         PageRequest pageRequest = PageRequest.of(form.getPageNo() - 1, form.getPageSize());
-        Page<JobBean> jobBeans = jobRepository.pageQuery(pageRequest, form.getType());
+        Page<JobBean> jobBeans = jobRepository.pageQuery(pageRequest, form.getType(), form.getJobName());
 
 
         List<String> dsId = new ArrayList<>();

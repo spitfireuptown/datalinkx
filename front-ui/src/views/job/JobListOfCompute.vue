@@ -2,6 +2,14 @@
   <a-card :bordered="false">
     <div class="table-operator">
       <a-button @click="newCompute" icon="plus" type="primary">新建</a-button>
+      <a-input
+        v-model="queryParam.job_name"
+        placeholder="请输入任务名称"
+        style="width: 200px"
+        @input="queryData"
+      >
+        <a-icon slot="prefix" type="search" />
+      </a-input>
     </div>
     <a-table
       :columns="columns"
@@ -149,8 +157,8 @@ export default {
         showSizeChanger: true
       },
       pages: {
-        size: 10,
-        current: 1
+        page_size: 10,
+        page_no: 1
       },
       queryParam: {
         'type': 2
@@ -182,8 +190,8 @@ export default {
     },
     handleTableChange (pagination) {
       this.pagination = pagination
-      this.pages.size = pagination.pageSize
-      this.pages.current = pagination.current
+      this.pages.page_size = pagination.pageSize
+      this.pages.page_no = pagination.current
       this.init()
     },
     edit (record) {
@@ -245,7 +253,7 @@ export default {
       this.init()
     },
     queryData () {
-      this.pages.current = 1
+      this.pages.page_no = 1
       this.init()
     },
     createEventSource () {

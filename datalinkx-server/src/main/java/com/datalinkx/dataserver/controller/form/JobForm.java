@@ -98,6 +98,10 @@ public class JobForm {
 
 		@ApiModelProperty(value = "任务类型")
 		private Integer type = -1;
+
+		@ApiModelProperty(value = "任务名称")
+		@JsonProperty("job_name")
+		private String jobName;
 	}
 
 	@EqualsAndHashCode(callSuper = true)
