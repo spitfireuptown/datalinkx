@@ -26,7 +26,7 @@
 <a href="#项目文档"><img src="https://img.shields.io/badge/MCP-solon-yellow.svg" alt="MCP框架"></a>
 
 
-🔥🔥 **10W+字，共92个文档，带你玩转datalinkx**，详情可戳：[细致文档带你吃透DatalinkX](https://www.yuque.com/uptown/mvoz3p/bircd1dx1w24e81y)
+🔥🔥 **10W+字，共92个文档，带你玩转datalinkx**，详情可戳：[细致文档带你吃透DatalinkX](https://share.note.youdao.com/s/6pPwe3oT)
 ## 异构数据源同步服务DatalinkX介绍
 
  **核心功能** ：在不同的异构数据源中进行数据同步，对同步任务进行管理和维护
@@ -100,4 +100,4 @@
 
 
 ## 项目文档
-[细致文档带你吃透DatalinkX](https://www.yuque.com/uptown/mvoz3p/bircd1dx1w24e81y)
+[细致文档带你吃透DatalinkX](https://share.note.youdao.com/s/6pPwe3oT)
