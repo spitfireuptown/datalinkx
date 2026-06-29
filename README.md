@@ -1,4 +1,11 @@
 ![输入图片说明](datalinkx-server/src/main/resources/readme/project_name.png)
+
+## [企业版尽在DatalinkX-Pro](https://note.youdao.com/s/a9ltzlc1)
+- 更完善的户权限体系
+- 更丰富的数据库插件支持
+- 5*24小时技术支持
+- 定制化需求承接
+
 ## DatalinkX Stars
 [![Stargazers over time](https://starchart.cc/SplitfireUptown/datalinkx.svg?variant=adaptive)](https://starchart.cc/SplitfireUptown/datalinkx)
 
