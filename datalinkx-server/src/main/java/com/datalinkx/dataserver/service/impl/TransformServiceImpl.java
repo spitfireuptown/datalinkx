@@ -61,6 +61,6 @@ public class TransformServiceImpl implements TransformService {
                 return TransformNodeMeta.ValidateResult.builder().valid(false).message(e.getMessage()).build();
             }
         }
-        return TransformNodeMeta.ValidateResult.builder().valid(false).message("算子校验失败").build();
+        return TransformNodeMeta.ValidateResult.builder().valid(true).message("算子校验成功").build();
     }
 }
